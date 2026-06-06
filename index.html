@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file: https://fonts.googleapis.com https://fonts.gstatic.com https://musicbrainz.org; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com file: data:; script-src 'self' 'unsafe-inline'">
+<title>m72b — File Formatter</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Permanent+Marker&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#000; --surface:#080808; --surface2:#101010;
+  --border:#1e1e1e; --border-hl:#3d1260;
+  --accent:#7b2fff; --accent2:#4a0099; --accent3:#d4c8ff;
+  --text:#e8e8e8; --muted:#555; --danger:#ff4466;
+  --ok:#22c97a; --warn:#f5a623;
+  --radius:10px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh;overflow:hidden;display:flex;flex-direction:column;user-select:none;}
+
+/* titlebar */
+.titlebar{height:32px;background:#000;border-bottom:1px solid #111;display:none;align-items:center;padding:0 12px;-webkit-app-region:drag;flex-shrink:0;}
+.titlebar-title{font-size:10px;color:#333;letter-spacing:2px;flex:1;}
+.titlebar-btns{display:flex;gap:4px;-webkit-app-region:no-drag;}
+.tb-btn{width:28px;height:20px;background:none;border:none;cursor:pointer;color:#555;font-size:11px;border-radius:3px;transition:all .1s;display:flex;align-items:center;justify-content:center;}
+.tb-btn:hover{background:#222;color:#eee;}
+.tb-btn.close:hover{background:var(--danger);color:#fff;}
+
+/* header */
+header{padding:14px 28px;border-bottom:1px solid #111;background:#000;box-shadow:0 1px 0 var(--border-hl);flex-shrink:0;display:flex;align-items:center;gap:14px;-webkit-app-region:drag;position:relative;overflow:hidden;}
+header::after{content:'M72B';position:absolute;right:-10px;top:-22px;font-family:'Permanent Marker',cursive;font-size:100px;color:rgba(60,10,100,0.08);pointer-events:none;letter-spacing:-4px;}
+.logo{font-family:'Permanent Marker',cursive;font-size:24px;text-shadow:3px 3px 0 #2a2a2a;-webkit-app-region:no-drag;}
+.logo span{color:var(--accent);text-shadow:3px 3px 0 #1a0033,0 0 18px rgba(123,47,255,.5);}
+.logo-badge{font-size:9px;background:var(--accent);color:#000;padding:2px 6px;border-radius:4px;letter-spacing:1px;margin-left:4px;vertical-align:middle;}
+.tagline{font-size:9px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;}
+.header-spacer{flex:1;}
+.header-actions{display:flex;gap:8px;-webkit-app-region:no-drag;align-items:center;}
+.nav-btn{background:none;border:1px solid #222;border-radius:8px;color:var(--muted);font-family:'DM Mono',monospace;font-size:10px;padding:5px 12px;cursor:pointer;transition:all .15s;letter-spacing:1px;}
+.nav-btn:hover{border-color:var(--border-hl);color:var(--accent3);}
+
+/* layout */
+.layout{display:grid;grid-template-columns:300px 1fr;flex:1;overflow:hidden;border-left:2px solid var(--border-hl);border-right:2px solid var(--border-hl);border-bottom:2px solid var(--border-hl);}
+
+/* left panel */
+.left-panel{border-right:1px solid #181818;display:flex;flex-direction:column;overflow:hidden;}
+.left-scroll{flex:1;overflow-y:auto;}
+.left-scroll::-webkit-scrollbar{width:4px;}
+.left-scroll::-webkit-scrollbar-thumb{background:#1e1e1e;border-radius:2px;}
+.panel-section{padding:16px 18px;border-bottom:1px solid #141414;}
+.section-label{font-size:9px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;}
+
+textarea.format-input{width:100%;background:#060606;border:1.5px solid #1e1e1e;border-radius:var(--radius);color:var(--text);font-family:'DM Mono',monospace;font-size:11px;padding:9px 11px;resize:none;height:64px;outline:none;transition:border-color .2s;line-height:1.6;user-select:text;}
+textarea.format-input:focus{border-color:var(--border-hl);}
+
+.token-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:7px;}
+.chip{background:#090909;border:1px solid #222;border-radius:5px;font-size:9px;padding:3px 7px;cursor:pointer;color:var(--accent);transition:all .12s;user-select:none;}
+.chip:hover{background:var(--accent);color:#000;border-color:var(--accent);}
+.chip-hint{font-size:9px;color:var(--muted);margin-top:5px;line-height:1.5;}
+
+/* overrides */
+.token-override-list{display:flex;flex-direction:column;gap:5px;}
+.token-override-row{display:grid;grid-template-columns:1fr auto 1fr auto;gap:5px;align-items:center;}
+.override-token-name,.override-value{background:#060606;border:1.5px solid #1a1a1a;border-radius:6px;color:var(--text);font-family:'DM Mono',monospace;font-size:10px;padding:5px 8px;outline:none;width:100%;user-select:text;transition:border-color .15s;}
+.override-token-name{color:var(--accent);}
+.override-token-name:focus,.override-value:focus{border-color:var(--border-hl);}
+.override-token-name::placeholder,.override-value::placeholder{color:#2a2a2a;}
+.override-eq{font-size:11px;color:var(--muted);padding:0 2px;}
+.override-del{background:none;border:none;color:#2a2a2a;cursor:pointer;font-size:12px;padding:3px 4px;border-radius:4px;transition:all .12s;}
+.override-del:hover{color:var(--danger);background:rgba(255,68,102,.1);}
+.add-override-btn{margin-top:7px;width:100%;background:#060606;border:1.5px dashed #1e1e1e;border-radius:7px;color:#333;font-family:'DM Mono',monospace;font-size:10px;padding:6px;cursor:pointer;transition:all .15s;letter-spacing:1px;}
+.add-override-btn:hover{border-color:var(--border-hl);color:var(--accent);}
+
+/* presets */
+.preset-save-row{display:flex;gap:6px;margin-top:10px;}
+input.preset-name-inp{flex:1;background:#060606;border:1.5px solid #1e1e1e;border-radius:var(--radius);color:var(--text);font-family:'DM Mono',monospace;font-size:10px;padding:6px 9px;outline:none;transition:border-color .2s;user-select:text;}
+input.preset-name-inp:focus{border-color:var(--border-hl);}
+input.preset-name-inp::placeholder{color:var(--muted);}
+.presets-list-wrap{padding:12px 18px;}
+.preset-item{background:#060606;border:1.5px solid #1a1a1a;border-radius:var(--radius);padding:9px 11px;margin-bottom:5px;cursor:pointer;transition:all .12s;display:flex;align-items:center;gap:7px;}
+.preset-item:hover{border-color:#2a2a2a;}
+.preset-item.active{border-color:var(--border-hl);background:rgba(61,18,96,.2);}
+.preset-icon{font-size:13px;flex-shrink:0;}
+.preset-info{flex:1;min-width:0;}
+.preset-name-display{font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.preset-format-display{font-size:9px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
+.preset-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:2px 4px;border-radius:4px;transition:all .12s;flex-shrink:0;}
+.preset-del:hover{color:var(--danger);background:rgba(255,68,102,.1);}
+.empty-presets{color:var(--muted);font-size:10px;text-align:center;padding:16px 0;line-height:1.8;}
+
+/* buttons */
+.btn{background:transparent;border:1.5px solid #252525;border-radius:var(--radius);color:var(--text);font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;padding:6px 13px;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.btn:hover{border-color:#3a3a3a;background:#0d0d0d;}
+.btn-accent{background:var(--accent);border-color:var(--accent);color:#000;}
+.btn-accent:hover{background:#6a22ee;border-color:#6a22ee;}
+.btn-purple{background:var(--accent2);border-color:var(--accent2);color:#fff;}
+.btn-purple:hover{background:#3a0077;border-color:#3a0077;}
+.btn-ok{background:var(--ok);border-color:var(--ok);color:#000;}
+.btn-ok:hover{background:#1ab569;border-color:#1ab569;}
+.btn-sm{font-size:11px;padding:5px 9px;}
+.btn:disabled{opacity:.35;cursor:not-allowed;}
+
+/* right panel */
+.right-panel{display:flex;flex-direction:column;overflow:hidden;background:#000;}
+
+/* folder bar */
+.folder-bar{margin:16px 22px 0;background:#050505;border:1px solid #1a1a1a;border-left:2px solid var(--border-hl);border-radius:var(--radius);padding:8px 13px;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.folder-label{font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;flex-shrink:0;}
+.folder-path{font-size:10px;color:#444;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.folder-path.set{color:var(--accent);}
+
+/* preview bar */
+.preview-bar{margin:8px 22px 0;background:#050505;border:1px solid #1a1a1a;border-left:2px solid var(--border-hl);border-radius:var(--radius);padding:8px 13px;display:none;align-items:center;gap:10px;flex-shrink:0;}
+.preview-bar.visible{display:flex;}
+.preview-label{font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;flex-shrink:0;}
+.preview-value{font-size:10px;color:var(--accent);flex:1;}
+
+/* files section */
+.files-section{flex:1;overflow:hidden;padding:8px 22px 18px;display:flex;flex-direction:column;gap:8px;}
+.files-header{display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+.files-count{font-size:9px;color:var(--muted);}
+.files-actions{display:flex;gap:6px;align-items:center;}
+
+.sort-label{display:flex;align-items:center;gap:5px;cursor:pointer;user-select:none;font-size:9px;color:var(--muted);padding:4px 8px;border:1.5px solid #1a1a1a;border-radius:var(--radius);transition:all .12s;}
+.sort-label:hover{border-color:#2a2a2a;color:var(--text);}
+.sort-label input[type=checkbox]{display:none;}
+.sort-box{width:11px;height:11px;border:1.5px solid #2a2a2a;border-radius:3px;background:#0a0a0a;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .12s;position:relative;font-size:7px;}
+.sort-label input:checked~.sort-box{background:var(--border-hl);border-color:var(--accent);}
+.sort-label input:checked~.sort-box::after{content:'✓';position:absolute;line-height:1;color:var(--accent);}
+.sort-label input:checked~.sort-text{color:var(--accent3);}
+
+/* file table */
+.file-table{background:#040404;border-radius:10px;border:1px solid #181818;outline:1px solid var(--border-hl);overflow:hidden;flex:1;display:flex;flex-direction:column;}
+.file-row-header{display:grid;gap:10px;align-items:center;padding:7px 12px;background:#080808;font-size:8px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;border-bottom:1px solid #181818;flex-shrink:0;}
+.file-list-scroll{overflow-y:auto;flex:1;}
+.file-list-scroll::-webkit-scrollbar{width:4px;}
+.file-list-scroll::-webkit-scrollbar-thumb{background:#1a1a1a;border-radius:2px;}
+
+/* grid layouts */
+.file-row,.file-row-header{grid-template-columns:1fr 1fr 80px 90px 80px;}
+.file-row{padding:8px 12px;border-bottom:1px solid #0e0e0e;transition:background .1s;align-items:center;display:grid;gap:10px;}
+.file-row:last-child{border-bottom:none;}
+.file-row:hover{background:#070707;}
+
+.file-original{font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.file-renamed-cell{display:flex;align-items:center;gap:5px;}
+.file-renamed-input{flex:1;background:transparent;border:1px solid transparent;border-radius:5px;color:#cc88ff;font-family:'DM Mono',monospace;font-size:10px;padding:3px 6px;outline:none;transition:all .15s;min-width:0;user-select:text;}
+.file-renamed-input:hover{border-color:#222;background:#0a0a0a;}
+.file-renamed-input:focus{border-color:var(--border-hl);background:#0c0c0c;color:var(--accent3);}
+.file-renamed-input.unknown{color:var(--danger);}
+.file-renamed-input.same{color:var(--muted);}
+.file-renamed-input.saved{color:var(--ok);}
+.file-size{font-size:9px;color:#333;text-align:right;}
+.file-status{font-size:9px;text-align:center;}
+.status-pill{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:12px;font-size:8px;letter-spacing:.5px;}
+.status-pending{background:rgba(123,47,255,.15);color:var(--accent);border:1px solid rgba(123,47,255,.3);}
+.status-saved{background:rgba(34,201,122,.12);color:var(--ok);border:1px solid rgba(34,201,122,.3);}
+.status-error{background:rgba(255,68,102,.12);color:var(--danger);border:1px solid rgba(255,68,102,.3);}
+.status-found{background:rgba(245,166,35,.12);color:var(--warn);border:1px solid rgba(245,166,35,.3);}
+
+.file-actions-cell{display:flex;gap:4px;justify-content:flex-end;align-items:center;}
+.row-action-btn{background:none;border:1px solid #1e1e1e;border-radius:5px;color:#333;cursor:pointer;font-size:9px;padding:3px 6px;transition:all .12s;font-family:'DM Mono',monospace;white-space:nowrap;}
+.row-action-btn:hover{border-color:var(--accent);color:var(--accent);}
+.row-action-btn.save-btn:hover{border-color:var(--ok);color:var(--ok);}
+.row-action-btn.del-btn:hover{border-color:var(--danger);color:var(--danger);}
+.row-action-btn.lookup-btn:hover{border-color:var(--warn);color:var(--warn);}
+.row-action-btn.spin{animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.no-files{padding:40px;text-align:center;color:var(--muted);font-size:10px;line-height:2;}
+.no-folder-hint{color:var(--accent2);font-size:9px;}
+
+/* bulk actions bar */
+.bulk-bar{margin:0 22px 6px;background:#050505;border:1px solid #1a1a1a;border-left:2px solid var(--ok);border-radius:var(--radius);padding:7px 13px;display:none;align-items:center;gap:10px;flex-shrink:0;}
+.bulk-bar.visible{display:flex;}
+.bulk-label{font-size:9px;color:var(--ok);letter-spacing:1px;flex:1;}
+
+/* toast */
+.toast{position:fixed;bottom:18px;right:18px;background:#050505;border:1.5px solid #222;border-radius:var(--radius);padding:9px 14px;font-size:11px;transform:translateY(60px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);z-index:9999;max-width:300px;pointer-events:none;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.success{border-color:var(--border-hl);color:var(--accent);}
+.toast.error{border-color:var(--danger);color:var(--danger);}
+.toast.ok{border-color:var(--ok);color:var(--ok);}
+
+/* modal */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:200;align-items:center;justify-content:center;}
+.modal-bg.open{display:flex;}
+.modal-box{background:#050505;border:1px solid #1e1e1e;outline:1.5px solid var(--border-hl);border-radius:14px;padding:22px;max-width:500px;width:90%;}
+.modal-title{font-family:'Permanent Marker',cursive;font-size:18px;color:var(--accent);margin-bottom:14px;}
+.token-table{width:100%;border-collapse:collapse;}
+.token-table td{padding:6px 7px;border-bottom:1px solid #111;font-size:11px;}
+.token-table td:first-child{color:var(--accent);width:38%;}
+.token-table td:last-child{color:var(--muted);}
+
+/* lookup result list */
+.lookup-results{margin-top:10px;display:flex;flex-direction:column;gap:5px;max-height:260px;overflow-y:auto;}
+.lookup-result-item{background:#080808;border:1px solid #1e1e1e;border-radius:7px;padding:9px 11px;cursor:pointer;transition:all .12s;}
+.lookup-result-item:hover{border-color:var(--border-hl);background:rgba(61,18,96,.2);}
+.lookup-result-title{font-size:11px;color:var(--accent3);}
+.lookup-result-sub{font-size:9px;color:var(--muted);margin-top:3px;}
+.lookup-modal-file{font-size:9px;color:var(--muted);margin-bottom:10px;padding:7px 10px;background:#0a0a0a;border-radius:6px;border:1px solid #1a1a1a;}
+
+/* ── Organizer overlay panel ─────────────────────────────────────────────── */
+.organizer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;display:none;align-items:stretch;justify-content:flex-end;}
+.organizer-overlay.open{display:flex;}
+.organizer-panel{width:min(680px,92vw);background:#050505;border-left:2px solid var(--border-hl);display:flex;flex-direction:column;overflow:hidden;animation:slideIn .2s ease;}
+@keyframes slideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.organizer-header{padding:14px 18px;border-bottom:1px solid #141414;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.organizer-title{font-family:'Permanent Marker',cursive;font-size:18px;color:var(--accent);flex:1;}
+.organizer-close{background:none;border:1px solid #222;border-radius:6px;color:var(--muted);cursor:pointer;font-size:12px;padding:4px 9px;transition:all .12s;font-family:'DM Mono',monospace;}
+.organizer-close:hover{border-color:var(--danger);color:var(--danger);}
+.organizer-body{flex:1;overflow-y:auto;padding:18px;}
+.organizer-body::-webkit-scrollbar{width:4px;}
+.organizer-body::-webkit-scrollbar-thumb{background:#1e1e1e;border-radius:2px;}
+.org-section{margin-bottom:22px;}
+.org-section-title{font-size:9px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;border-bottom:1px solid #141414;padding-bottom:6px;}
+.org-folder-bar{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.org-folder-path{font-size:10px;color:var(--accent);flex:1;background:#080808;border:1px solid #1a1a1a;border-radius:6px;padding:6px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.org-folder-path.empty{color:#333;}
+.org-rules{display:flex;flex-direction:column;gap:6px;}
+.org-rule{background:#080808;border:1px solid #1a1a1a;border-radius:8px;padding:10px 12px;display:grid;grid-template-columns:1fr auto 1fr auto;gap:8px;align-items:center;}
+.org-rule input{background:#060606;border:1.5px solid #1a1a1a;border-radius:5px;color:var(--text);font-family:'DM Mono',monospace;font-size:10px;padding:5px 8px;outline:none;width:100%;transition:border-color .15s;user-select:text;}
+.org-rule input:focus{border-color:var(--border-hl);}
+.org-rule input::placeholder{color:#2a2a2a;}
+.org-rule-arrow{font-size:11px;color:var(--muted);}
+.org-rule-del{background:none;border:none;color:#2a2a2a;cursor:pointer;font-size:12px;padding:3px 5px;border-radius:4px;transition:all .12s;}
+.org-rule-del:hover{color:var(--danger);background:rgba(255,68,102,.1);}
+.org-add-rule{width:100%;background:#060606;border:1.5px dashed #1e1e1e;border-radius:7px;color:#333;font-family:'DM Mono',monospace;font-size:10px;padding:7px;cursor:pointer;transition:all .15s;letter-spacing:1px;margin-top:4px;}
+.org-add-rule:hover{border-color:var(--border-hl);color:var(--accent);}
+.org-action-row{display:flex;gap:8px;margin-top:14px;}
+.org-log{margin-top:12px;background:#030303;border:1px solid #111;border-radius:7px;padding:10px;max-height:160px;overflow-y:auto;font-size:10px;color:var(--muted);line-height:1.8;}
+.org-log:empty::before{content:'No actions yet.';color:#222;}
+.org-log-ok{color:var(--ok);}
+.org-log-err{color:var(--danger);}
+.org-empty{color:#222;font-size:10px;text-align:center;padding:20px 0;}
+</style>
+</head>
+<body>
+
+<div class="titlebar" id="titlebar">
+  <span class="titlebar-title">M72B FILE FORMATTER V2</span>
+  <div class="titlebar-btns">
+    <button class="tb-btn" id="tbMin">─</button>
+    <button class="tb-btn" id="tbMax">□</button>
+    <button class="tb-btn close" id="tbClose">✕</button>
+  </div>
+</div>
+
+<header>
+  <div class="logo">m72b <span>formatter</span> <span class="logo-badge">V2</span></div>
+  <div class="tagline">Edit Engine</div>
+  <div class="header-spacer"></div>
+  <div class="header-actions">
+    <button class="nav-btn" id="openOrganizerBtn">📁 File Organizer</button>
+    <a href="#" id="helpLink" style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);text-decoration:none;letter-spacing:1px;">tokens ?</a>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- LEFT -->
+  <div class="left-panel">
+    <div class="left-scroll">
+
+      <div class="panel-section">
+        <div class="section-label">Format Template</div>
+        <textarea class="format-input" id="formatInput" placeholder="{TrackNumber} - {TrackName} - {Artist}.{ext}"></textarea>
+        <div class="token-chips" id="chipArea">
+          <span class="chip" data-token="{TrackNumber}">TrackNumber</span>
+          <span class="chip" data-token="{TrackName}">TrackName</span>
+          <span class="chip" data-token="{Artist}">Artist</span>
+          <span class="chip" data-token="{Album}">Album</span>
+          <span class="chip" data-token="{Year}">Year</span>
+          <span class="chip" data-token="{ext}">ext</span>
+          <span class="chip" data-token="{n}">counter</span>
+          <span class="chip" data-token="{original}">original</span>
+        </div>
+        <div class="chip-hint">↑ click to insert at cursor &nbsp;·&nbsp; <a href="#" id="helpLink2" style="color:var(--accent2);text-decoration:none">all tokens →</a></div>
+        <div class="preset-save-row">
+          <input class="preset-name-inp" type="text" id="presetNameInput" placeholder="Preset name…">
+          <button class="btn btn-accent btn-sm" id="savePresetBtn">Save</button>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="section-label">Token Overrides</div>
+        <div class="token-override-list" id="overrideList"></div>
+        <button class="add-override-btn" id="addOverrideBtn">+ Add override</button>
+      </div>
+
+      <div class="panel-section" style="padding-bottom:6px">
+        <div class="section-label">Saved Presets</div>
+      </div>
+      <div class="presets-list-wrap" id="presetsList"></div>
+
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right-panel">
+
+    <div class="folder-bar">
+      <span class="folder-label">Folder</span>
+      <span class="folder-path" id="folderPath">— pick a folder to load files from disk</span>
+      <button class="btn btn-sm" id="pickFolderBtn">Pick folder</button>
+      <button class="btn btn-sm" id="pickFilesBtn" title="Select individual audio files">Pick files</button>
+    </div>
+
+    <div class="preview-bar" id="previewBar">
+      <span class="preview-label">Preview</span>
+      <span class="preview-value" id="previewValue">—</span>
+    </div>
+
+    <div class="bulk-bar" id="bulkBar">
+      <span class="bulk-label" id="bulkLabel">0 changes pending</span>
+      <button class="btn btn-ok btn-sm" id="saveAllBtn">Save All</button>
+      <button class="btn btn-sm" id="revertAllBtn">Revert</button>
+    </div>
+
+    <div class="files-section">
+      <div class="files-header">
+        <div class="files-count" id="filesCount">0 files</div>
+        <div class="files-actions">
+          <label class="sort-label">
+            <input type="checkbox" id="sortByDate">
+            <span class="sort-box"></span>
+            <span class="sort-text">Sort by date</span>
+          </label>
+          <button class="btn btn-sm" id="applyFormatBtn">Apply format to all</button>
+          <button class="btn btn-sm" id="lookupAllBtn">🔍 Lookup all</button>
+        </div>
+      </div>
+
+      <div class="file-table">
+        <div class="file-row-header">
+          <span>Original filename</span>
+          <span>→ New name (editable)</span>
+          <span style="text-align:right">Size</span>
+          <span style="text-align:center">Status</span>
+          <span style="text-align:right">Actions</span>
+        </div>
+        <div class="file-list-scroll">
+          <div id="fileList"><div class="no-files">Pick a folder above to load files<br><span class="no-folder-hint">Files are renamed in-place on disk — no re-download needed</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Help modal -->
+<div class="modal-bg" id="helpModal">
+  <div class="modal-box">
+    <div class="modal-title">Token Reference</div>
+    <table class="token-table">
+      <tr><td>{TrackNumber}</td><td>Number at start of filename (zero-padded)</td></tr>
+      <tr><td>{TrackName}</td><td>Main name portion after the number</td></tr>
+      <tr><td>{Artist}</td><td>Text after first " - " separator</td></tr>
+      <tr><td>{Album}</td><td>Text after second " - " separator</td></tr>
+      <tr><td>{Year}</td><td>4-digit year found in filename</td></tr>
+      <tr><td>{ext}</td><td>Original file extension (no dot)</td></tr>
+      <tr><td>{n}</td><td>Auto counter: 01, 02, 03…</td></tr>
+      <tr><td>{original}</td><td>Full original filename (no extension)</td></tr>
+      <tr><td>{UPPER}</td><td>Original name in UPPERCASE</td></tr>
+      <tr><td>{lower}</td><td>Original name in lowercase</td></tr>
+    </table>
+    <br>
+    <div style="font-size:10px;color:var(--muted);line-height:1.7">
+      <b style="color:var(--accent3)">How editing works in v2:</b><br>
+      Files are renamed directly on disk — no downloading. Pick a folder, edit names inline or apply a format template, then click <b style="color:var(--ok)">Save</b> per row or <b style="color:var(--ok)">Save All</b>.<br><br>
+      <b style="color:var(--accent3)">🔍 Music lookup:</b><br>
+      Click the lookup button on any audio file to search MusicBrainz for the real track/artist name.
+    </div>
+    <br>
+    <button class="btn btn-sm" id="closeModal">Close</button>
+  </div>
+</div>
+
+<!-- Lookup modal -->
+<div class="modal-bg" id="lookupModal">
+  <div class="modal-box" style="max-width:560px">
+    <div class="modal-title">🔍 Music Lookup</div>
+    <div class="lookup-modal-file" id="lookupModalFile">—</div>
+    <div id="lookupModalBody"><div style="color:var(--muted);font-size:10px">Searching MusicBrainz…</div></div>
+    <br>
+    <button class="btn btn-sm" id="closeLookupModal">Close</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ── File Organizer panel ──────────────────────────────────────────────── -->
+<div class="organizer-overlay" id="organizerOverlay">
+  <div class="organizer-panel" id="organizerPanel">
+    <div class="organizer-header">
+      <span class="organizer-title">📁 File Organizer</span>
+      <button class="organizer-close" id="closeOrganizerBtn">✕ Close</button>
+    </div>
+    <div class="organizer-body">
+
+      <div class="org-section">
+        <div class="org-section-title">Source folder</div>
+        <div class="org-folder-bar">
+          <span class="org-folder-path empty" id="orgFolderPath">— no folder selected —</span>
+          <button class="btn btn-sm" id="orgPickFolderBtn">Browse</button>
+        </div>
+      </div>
+
+      <div class="org-section">
+        <div class="org-section-title">Sort rules — match pattern → move to subfolder</div>
+        <div class="org-rules" id="orgRules"></div>
+        <button class="org-add-rule" id="orgAddRuleBtn">+ Add rule</button>
+      </div>
+
+      <div class="org-section">
+        <div class="org-section-title">Actions</div>
+        <div class="org-action-row">
+          <button class="btn btn-accent btn-sm" id="orgRunBtn">▶ Run organizer</button>
+          <button class="btn btn-sm" id="orgPreviewBtn">👁 Preview only</button>
+        </div>
+        <div class="org-log" id="orgLog"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const isElectron = !!window.electronAPI;
+const platform   = isElectron ? window.electronAPI.platform : 'web';
+
+if (isElectron && platform !== 'darwin') {
+  document.getElementById('titlebar').style.display = 'flex';
+  document.getElementById('tbMin').onclick   = () => window.electronAPI.winMinimize();
+  document.getElementById('tbMax').onclick   = () => window.electronAPI.winMaximize();
+  document.getElementById('tbClose').onclick = () => window.electronAPI.winClose();
+}
+
+// ─── State ─────────────────────────────────────────────────────────────────
+let folderPath = null;
+let fileRecords = []; // [{name, ext, size, mtime, newName, status:'pending'|'saved'|'error'}]
+let presets = JSON.parse(localStorage.getItem('m72b_presets_v2') || '[]');
+let activePresetId = null;
+let overrides = [];
+let pendingLookupRow = null; // {idx, originalName}
+
+if (presets.length === 0) {
+  presets = [
+    { id:'p1', name:'Music Track',  format:'{TrackNumber} - {TrackName} - {Artist}.{ext}', icon:'🎵' },
+    { id:'p2', name:'Photo Date',   format:'{Year}_{original}.{ext}',                      icon:'📷' },
+    { id:'p3', name:'Lowercase',    format:'{lower}.{ext}',                                icon:'🔡' },
+  ];
+  savePresets();
+}
+function savePresets() { localStorage.setItem('m72b_presets_v2', JSON.stringify(presets)); }
+
+// ─── Token extraction (smarter v2) ─────────────────────────────────────────
+function extractTokens(filename, idx) {
+  const dotIdx = filename.lastIndexOf('.');
+  const ext  = dotIdx > -1 ? filename.slice(dotIdx + 1) : '';
+  const base = dotIdx > -1 ? filename.slice(0, dotIdx) : filename;
+
+  // Split on common separators: " - ", " – ", " | ", "_", "·"
+  const parts = base.split(/\s*[-–—|·]\s*|\s{2,}/).map(p => p.trim()).filter(Boolean);
+
+  // Detect leading track number (e.g. "01", "1.", "Track 3")
+  const numMatch = base.match(/^(?:track\s*)?(\d{1,3})[\s.\-_]/i);
+  const trackNumber = numMatch ? numMatch[1].padStart(2, '0') : String(idx + 1).padStart(2, '0');
+
+  // Remove pure-number parts to get clean name parts
+  const cleanParts = parts.map(p => p.replace(/^(?:track\s*)?\d{1,3}$/, '').trim()).filter(Boolean);
+
+  // Year: 4-digit between 1900-2099
+  const yearMatch = base.match(/\b((?:19|20)\d{2})\b/);
+  const year = yearMatch ? yearMatch[1] : String(new Date().getFullYear());
+
+  // Underscores → spaces for display
+  const humanise = s => s.replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
+
+  const tokens = {
+    TrackNumber: trackNumber,
+    TrackName:   humanise(cleanParts[0] || base),
+    Artist:      humanise(cleanParts[1] || ''),
+    Album:       humanise(cleanParts[2] || ''),
+    Year:        year,
+    ext:         ext,
+    original:    base,
+    UPPER:       base.toUpperCase(),
+    lower:       base.toLowerCase(),
+    n:           String(idx + 1).padStart(2, '0'),
+  };
+
+  for (const ov of overrides) {
+    if (ov.token && ov.value !== '') tokens[ov.token] = ov.value;
+  }
+  return tokens;
+}
+
+function applyFormat(format, tokens) {
+  if (!format.trim()) return null;
+  let result = format;
+  for (const [k, v] of Object.entries(tokens)) result = result.replaceAll(`{${k}}`, v);
+  if (/{[^}]+}/.test(result)) return { name: result, hasUnknown: true };
+  return { name: result, hasUnknown: false };
+}
+
+function fmtSize(bytes) {
+  if (!bytes) return '—';
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/1024/1024).toFixed(1) + ' MB';
+}
+
+// ─── Load folder ───────────────────────────────────────────────────────────
+async function loadFolder(path) {
+  folderPath = path;
+  document.getElementById('folderPath').textContent = path;
+  document.getElementById('folderPath').classList.add('set');
+  showToast('Loading…', '');
+
+  const result = await window.electronAPI.readFolder(path);
+  if (result.error) { showToast('Error: ' + result.error, 'error'); return; }
+
+  fileRecords = result.map((f, i) => ({
+    ...f,
+    newName: f.name,
+    status: 'ready',
+    idx: i,
+  }));
+  renderFiles();
+  showToast(`${fileRecords.length} files loaded`, 'ok');
+}
+
+// ─── Sorting ───────────────────────────────────────────────────────────────
+function getSorted() {
+  const copy = [...fileRecords];
+  if (document.getElementById('sortByDate').checked)
+    copy.sort((a, b) => (a.mtime || 0) - (b.mtime || 0));
+  return copy;
+}
+
+// ─── Render files ──────────────────────────────────────────────────────────
+function renderFiles() {
+  const list   = document.getElementById('fileList');
+  const count  = document.getElementById('filesCount');
+  const format = document.getElementById('formatInput').value;
+
+  count.textContent = `${fileRecords.length} file${fileRecords.length !== 1 ? 's' : ''}`;
+
+  if (fileRecords.length === 0) {
+    list.innerHTML = '<div class="no-files">No files in this folder</div>';
+    updateBulkBar(); return;
+  }
+
+  const sorted = getSorted();
+  list.innerHTML = '';
+
+  sorted.forEach(f => {
+    const hasPending = f.newName !== f.name && f.status !== 'saved';
+    const inputClass = f.status === 'saved' ? 'saved' :
+                       f.status === 'error'  ? 'unknown' :
+                       hasPending            ? '' : 'same';
+
+    const isAudio = /^(mp3|flac|wav|aac|ogg|m4a|wma|opus)$/i.test(f.ext);
+
+    const row = document.createElement('div');
+    row.className = 'file-row';
+    row.dataset.name = f.name;
+    row.innerHTML = `
+      <span class="file-original" title="${esc(f.name)}">${esc(f.name)}</span>
+      <div class="file-renamed-cell">
+        <input class="file-renamed-input ${inputClass}" type="text"
+          value="${esc(f.newName)}" data-original="${esc(f.name)}" spellcheck="false">
+      </div>
+      <span class="file-size">${fmtSize(f.size)}</span>
+      <span class="file-status">${statusPill(f)}</span>
+      <div class="file-actions-cell">
+        ${isAudio ? `<button class="row-action-btn lookup-btn" data-name="${esc(f.name)}" title="Lookup on MusicBrainz">🔍</button>` : ''}
+        <button class="row-action-btn save-btn" data-name="${esc(f.name)}">Save</button>
+        <button class="row-action-btn del-btn" data-name="${esc(f.name)}">✕</button>
+      </div>`;
+
+    // Inline edit → mark pending
+    const inp = row.querySelector('.file-renamed-input');
+    inp.addEventListener('input', () => {
+      const rec = fileRecords.find(r => r.name === f.name);
+      if (!rec) return;
+      rec.newName = inp.value;
+      rec.status  = inp.value === rec.name ? 'ready' : 'pending';
+      inp.className = `file-renamed-input ${inp.value === rec.name ? 'same' : ''}`;
+      row.querySelector('.file-status').innerHTML = statusPill(rec);
+      updateBulkBar();
+      updatePreview();
+    });
+
+    // Save button
+    row.querySelector('.save-btn').addEventListener('click', () => saveRow(f.name));
+
+    // Remove from list button
+    row.querySelector('.del-btn').addEventListener('click', () => {
+      fileRecords = fileRecords.filter(r => r.name !== f.name);
+      renderFiles();
+    });
+
+    // Lookup button
+    const lb = row.querySelector('.lookup-btn');
+    if (lb) lb.addEventListener('click', () => openLookup(f.name));
+
+    list.appendChild(row);
+  });
+
+  updateBulkBar();
+}
+
+function statusPill(f) {
+  if (f.status === 'saved')   return `<span class="status-pill status-saved">✓ saved</span>`;
+  if (f.status === 'error')   return `<span class="status-pill status-error">✕ error</span>`;
+  if (f.status === 'found')   return `<span class="status-pill status-found">♪ found</span>`;
+  if (f.newName !== f.name)   return `<span class="status-pill status-pending">● pending</span>`;
+  return '';
+}
+
+// ─── Save a single row ─────────────────────────────────────────────────────
+async function saveRow(originalName) {
+  if (!folderPath) { showToast('No folder selected', 'error'); return; }
+  const rec = fileRecords.find(r => r.name === originalName);
+  if (!rec) return;
+  if (rec.newName === rec.name) { showToast('Name unchanged', ''); return; }
+  if (!rec.newName.trim()) { showToast('Name cannot be empty', 'error'); return; }
+
+  const res = await window.electronAPI.renameFile({
+    folderPath, oldName: rec.name, newName: rec.newName
+  });
+
+  if (res.ok) {
+    rec.name   = rec.newName;
+    rec.status = 'saved';
+    showToast(`Renamed → ${rec.newName}`, 'ok');
+  } else {
+    rec.status = 'error';
+    showToast('Error: ' + res.error, 'error');
+  }
+  renderFiles();
+}
+
+// ─── Save all pending ──────────────────────────────────────────────────────
+async function saveAll() {
+  const pending = fileRecords.filter(r => r.newName !== r.name && r.status !== 'saved');
+  if (pending.length === 0) { showToast('Nothing to save', ''); return; }
+  for (const rec of pending) await saveRow(rec.name);
+  showToast(`Saved ${pending.length} files`, 'ok');
+}
+
+// ─── Apply format template to all ─────────────────────────────────────────
+function applyFormatAll() {
+  const format = document.getElementById('formatInput').value.trim();
+  if (!format) { showToast('Set a format template first', 'error'); return; }
+  let changed = 0;
+  fileRecords.forEach((rec, i) => {
+    const tokens = extractTokens(rec.name, i);
+    const result = applyFormat(format, tokens);
+    if (result && !result.hasUnknown) {
+      rec.newName = result.name;
+      if (rec.newName !== rec.name) { rec.status = 'pending'; changed++; }
+    }
+  });
+  renderFiles();
+  showToast(`Format applied to ${changed} file${changed !== 1 ? 's' : ''}`, 'success');
+}
+
+// ─── Revert all pending ────────────────────────────────────────────────────
+function revertAll() {
+  fileRecords.forEach(rec => { if (rec.status !== 'saved') { rec.newName = rec.name; rec.status = 'ready'; }});
+  renderFiles(); showToast('All pending changes reverted', '');
+}
+
+// ─── Bulk bar ──────────────────────────────────────────────────────────────
+function updateBulkBar() {
+  const bar   = document.getElementById('bulkBar');
+  const label = document.getElementById('bulkLabel');
+  const count = fileRecords.filter(r => r.newName !== r.name && r.status !== 'saved').length;
+  if (count > 0) {
+    bar.classList.add('visible');
+    label.textContent = `${count} change${count !== 1 ? 's' : ''} pending`;
+  } else {
+    bar.classList.remove('visible');
+  }
+}
+
+// ─── Preview ───────────────────────────────────────────────────────────────
+function updatePreview() {
+  const bar    = document.getElementById('previewBar');
+  const val    = document.getElementById('previewValue');
+  const format = document.getElementById('formatInput').value.trim();
+  if (!format) { bar.classList.remove('visible'); return; }
+  bar.classList.add('visible');
+  const ex = { TrackNumber:'03', TrackName:'Summer Rain', Artist:'Luna Echo', Album:'Dusk Sessions', Year:'2024', ext:'mp3', original:'03 - Summer Rain - Luna Echo', UPPER:'03 - SUMMER RAIN - LUNA ECHO', lower:'03 - summer rain - luna echo', n:'01' };
+  for (const ov of overrides) { if (ov.token && ov.value !== '') ex[ov.token] = ov.value; }
+  const r = applyFormat(format, ex);
+  val.textContent = r ? r.name : '—';
+}
+
+// ─── MusicBrainz lookup ────────────────────────────────────────────────────
+async function openLookup(fileName) {
+  pendingLookupRow = fileName;
+  document.getElementById('lookupModalFile').textContent = fileName;
+  document.getElementById('lookupModalBody').innerHTML = '<div style="color:var(--muted);font-size:10px;">Searching MusicBrainz…</div>';
+  document.getElementById('lookupModal').classList.add('open');
+
+  // Build query from filename (strip extension, replace separators)
+  const dotIdx = fileName.lastIndexOf('.');
+  const base   = dotIdx > -1 ? fileName.slice(0, dotIdx) : fileName;
+  const query  = base.replace(/[_\-–—|·]+/g, ' ').replace(/\s+/g, ' ').trim();
+
+  const res = await window.electronAPI.musicBrainzSearch(query);
+
+  if (!res.ok || !res.data.recordings || res.data.recordings.length === 0) {
+    document.getElementById('lookupModalBody').innerHTML =
+      '<div style="color:var(--muted);font-size:10px;">No results found on MusicBrainz.<br>Try editing the filename manually.</div>';
+    return;
+  }
+
+  const items = res.data.recordings.slice(0, 8);
+  const ext   = dotIdx > -1 ? fileName.slice(dotIdx) : '';
+
+  const html = `<div style="font-size:9px;color:var(--muted);margin-bottom:6px;">Click a result to use it as the new filename:</div>
+  <div class="lookup-results">` +
+  items.map(r => {
+    const artist  = r['artist-credit']?.map(a => a.name || a.artist?.name).filter(Boolean).join(', ') || '—';
+    const release = r.releases?.[0]?.title || '—';
+    const year    = r.releases?.[0]?.date?.slice(0,4) || '—';
+    const proposed = `${r.title} - ${artist}${ext}`;
+    return `<div class="lookup-result-item" data-proposed="${esc(proposed)}">
+      <div class="lookup-result-title">${esc(r.title)}</div>
+      <div class="lookup-result-sub">Artist: ${esc(artist)} &nbsp;·&nbsp; Album: ${esc(release)} &nbsp;·&nbsp; ${year}</div>
+      <div style="font-size:9px;color:var(--accent);margin-top:4px;">→ ${esc(proposed)}</div>
+    </div>`;
+  }).join('') + '</div>';
+
+  document.getElementById('lookupModalBody').innerHTML = html;
+
+  document.querySelectorAll('.lookup-result-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const proposed = item.dataset.proposed;
+      const rec = fileRecords.find(r => r.name === pendingLookupRow);
+      if (rec) {
+        rec.newName = proposed;
+        rec.status  = 'found';
+        renderFiles();
+        showToast('Name applied from MusicBrainz', 'ok');
+      }
+      document.getElementById('lookupModal').classList.remove('open');
+    });
+  });
+}
+
+async function lookupAll() {
+  const audioFiles = fileRecords.filter(r => /^(mp3|flac|wav|aac|ogg|m4a|wma|opus)$/i.test(r.ext));
+  if (audioFiles.length === 0) { showToast('No audio files found', 'error'); return; }
+  showToast(`Looking up ${audioFiles.length} files…`, '');
+  let found = 0;
+  for (const rec of audioFiles) {
+    const dotIdx = rec.name.lastIndexOf('.');
+    const base   = dotIdx > -1 ? rec.name.slice(0, dotIdx) : rec.name;
+    const ext    = dotIdx > -1 ? rec.name.slice(dotIdx) : '';
+    const query  = base.replace(/[_\-–—|·]+/g, ' ').replace(/\s+/g, ' ').trim();
+    const res    = await window.electronAPI.musicBrainzSearch(query);
+    if (res.ok && res.data.recordings?.length > 0) {
+      const r      = res.data.recordings[0];
+      const artist = r['artist-credit']?.map(a => a.name || a.artist?.name).filter(Boolean).join(', ') || '';
+      rec.newName  = artist ? `${r.title} - ${artist}${ext}` : `${r.title}${ext}`;
+      rec.status   = 'found';
+      found++;
+    }
+    // Small delay to respect rate limits
+    await new Promise(r => setTimeout(r, 200));
+  }
+  renderFiles();
+  showToast(`Found metadata for ${found} / ${audioFiles.length} files`, found > 0 ? 'ok' : 'error');
+}
+
+// ─── Presets ───────────────────────────────────────────────────────────────
+function renderPresets() {
+  const c = document.getElementById('presetsList');
+  if (presets.length === 0) {
+    c.innerHTML = '<div class="empty-presets">No presets yet.<br>Build a format and save it.</div>'; return;
+  }
+  c.innerHTML = '';
+  presets.forEach(p => {
+    const item = document.createElement('div');
+    item.className = `preset-item${p.id === activePresetId ? ' active' : ''}`;
+    item.innerHTML = `
+      <span class="preset-icon">${p.icon || '📋'}</span>
+      <div class="preset-info">
+        <div class="preset-name-display">${esc(p.name)}</div>
+        <div class="preset-format-display">${esc(p.format)}</div>
+      </div>
+      <button class="preset-del" data-id="${p.id}">✕</button>`;
+    item.addEventListener('click', e => {
+      if (e.target.classList.contains('preset-del')) return;
+      activePresetId = p.id;
+      document.getElementById('formatInput').value = p.format;
+      renderPresets(); updatePreview();
+    });
+    item.querySelector('.preset-del').addEventListener('click', () => {
+      presets = presets.filter(x => x.id !== p.id);
+      if (activePresetId === p.id) activePresetId = null;
+      savePresets(); renderPresets();
+    });
+    c.appendChild(item);
+  });
+}
+
+// ─── Overrides ─────────────────────────────────────────────────────────────
+function renderOverrides() {
+  const list = document.getElementById('overrideList');
+  list.innerHTML = '';
+  if (overrides.length === 0) {
+    list.innerHTML = '<div style="font-size:9px;color:#2a2a2a;padding:4px 0">No overrides</div>'; return;
+  }
+  overrides.forEach((ov, i) => {
+    const row = document.createElement('div');
+    row.className = 'token-override-row';
+    row.innerHTML = `
+      <input class="override-token-name" type="text" placeholder="TokenName" value="${esc(ov.token)}" data-idx="${i}" data-field="token">
+      <span class="override-eq">=</span>
+      <input class="override-value" type="text" placeholder="fixed value" value="${esc(ov.value)}" data-idx="${i}" data-field="value">
+      <button class="override-del" data-idx="${i}">✕</button>`;
+    list.appendChild(row);
+  });
+  list.querySelectorAll('.override-token-name,.override-value').forEach(inp => {
+    inp.addEventListener('input', () => {
+      overrides[+inp.dataset.idx][inp.dataset.field] = inp.value;
+      updatePreview();
+    });
+  });
+  list.querySelectorAll('.override-del').forEach(btn => {
+    btn.addEventListener('click', () => {
+      overrides.splice(+btn.dataset.idx, 1);
+      renderOverrides(); updatePreview();
+    });
+  });
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = `toast ${type} show`;
+  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ─── Events ────────────────────────────────────────────────────────────────
+document.getElementById('pickFolderBtn').addEventListener('click', async () => {
+  const p = await window.electronAPI.pickFolder();
+  if (p) loadFolder(p);
+});
+
+document.getElementById('formatInput').addEventListener('input', () => {
+  activePresetId = null; renderPresets(); updatePreview();
+});
+
+document.getElementById('sortByDate').addEventListener('change', renderFiles);
+
+document.querySelectorAll('.chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    const ta = document.getElementById('formatInput');
+    const pos = ta.selectionStart, val = ta.value;
+    ta.value = val.slice(0, pos) + chip.dataset.token + val.slice(pos);
+    ta.focus(); ta.selectionStart = ta.selectionEnd = pos + chip.dataset.token.length;
+    updatePreview();
+  });
+});
+
+document.getElementById('savePresetBtn').addEventListener('click', () => {
+  const format = document.getElementById('formatInput').value.trim();
+  const name   = document.getElementById('presetNameInput').value.trim();
+  if (!format) { showToast('Enter a format first', 'error'); return; }
+  if (!name)   { showToast('Give the preset a name', 'error'); return; }
+  const icons = ['🎵','📷','🎬','📁','🔡','📝','🎧','📌','⚡','🎯'];
+  const id = 'p' + Date.now();
+  presets.push({ id, name, format, icon: icons[Math.floor(Math.random() * icons.length)] });
+  savePresets(); activePresetId = id;
+  document.getElementById('presetNameInput').value = '';
+  renderPresets(); showToast(`"${name}" saved!`, 'success');
+});
+
+document.getElementById('addOverrideBtn').addEventListener('click', () => {
+  overrides.push({ token: '', value: '' }); renderOverrides();
+});
+
+document.getElementById('applyFormatBtn').addEventListener('click', applyFormatAll);
+document.getElementById('lookupAllBtn').addEventListener('click', lookupAll);
+document.getElementById('saveAllBtn').addEventListener('click', saveAll);
+document.getElementById('revertAllBtn').addEventListener('click', revertAll);
+
+// ── Open organizer as in-page panel ────────────────────────────────────────
+document.getElementById('openOrganizerBtn').addEventListener('click', () => {
+  document.getElementById('organizerOverlay').classList.add('open');
+});
+document.getElementById('closeOrganizerBtn').addEventListener('click', () => {
+  document.getElementById('organizerOverlay').classList.remove('open');
+});
+document.getElementById('organizerOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('organizerOverlay'))
+    document.getElementById('organizerOverlay').classList.remove('open');
+});
+
+// ── Pick individual audio files ────────────────────────────────────────────
+document.getElementById('pickFilesBtn').addEventListener('click', async () => {
+  if (!isElectron) { showToast('File picker requires the desktop app', 'error'); return; }
+  const files = await window.electronAPI.pickFiles();
+  if (!files || files.length === 0) return;
+
+  // Group by their common parent directory (use the first file's dir as folderPath)
+  const path = require ? null : null; // handled in main; files come back as full paths
+  // electronAPI.pickFiles returns [{name, dir, ext, size, mtime}, ...]
+  const firstDir = files[0].dir;
+  folderPath = firstDir;
+  document.getElementById('folderPath').textContent = `${files.length} file(s) from ${firstDir}`;
+  document.getElementById('folderPath').classList.add('set');
+
+  fileRecords = files.map((f, i) => ({
+    name:    f.name,
+    ext:     f.ext,
+    size:    f.size,
+    mtime:   f.mtime,
+    newName: f.name,
+    status:  'ready',
+    idx:     i,
+  }));
+  renderFiles();
+  showToast(`${fileRecords.length} file(s) loaded`, 'ok');
+});
+
+// ── Organizer panel logic ──────────────────────────────────────────────────
+let orgFolderPath = null;
+let orgRules = [{ match: '', dest: '' }];
+
+function renderOrgRules() {
+  const container = document.getElementById('orgRules');
+  container.innerHTML = '';
+  if (orgRules.length === 0) {
+    container.innerHTML = '<div class="org-empty">No rules yet — add one below.</div>'; return;
+  }
+  orgRules.forEach((rule, i) => {
+    const row = document.createElement('div');
+    row.className = 'org-rule';
+    row.innerHTML = `
+      <input type="text" placeholder="*.mp3  or  artist name" value="${esc(rule.match)}" data-idx="${i}" data-field="match">
+      <span class="org-rule-arrow">→</span>
+      <input type="text" placeholder="subfolder name" value="${esc(rule.dest)}" data-idx="${i}" data-field="dest">
+      <button class="org-rule-del" data-idx="${i}">✕</button>`;
+    row.querySelectorAll('input').forEach(inp => {
+      inp.addEventListener('input', () => { orgRules[+inp.dataset.idx][inp.dataset.field] = inp.value; });
+    });
+    row.querySelector('.org-rule-del').addEventListener('click', () => {
+      orgRules.splice(i, 1); renderOrgRules();
+    });
+    container.appendChild(row);
+  });
+}
+
+document.getElementById('orgAddRuleBtn').addEventListener('click', () => {
+  orgRules.push({ match: '', dest: '' }); renderOrgRules();
+});
+
+document.getElementById('orgPickFolderBtn').addEventListener('click', async () => {
+  if (!isElectron) { showToast('Requires desktop app', 'error'); return; }
+  const p = await window.electronAPI.pickFolder();
+  if (!p) return;
+  orgFolderPath = p;
+  const el = document.getElementById('orgFolderPath');
+  el.textContent = p; el.classList.remove('empty');
+});
+
+async function runOrganizer(dryRun) {
+  const log = document.getElementById('orgLog');
+  if (!isElectron) { log.innerHTML = '<span class="org-log-err">Requires the desktop app.</span>'; return; }
+  if (!orgFolderPath) { showToast('Pick a source folder first', 'error'); return; }
+  const activeRules = orgRules.filter(r => r.match.trim() && r.dest.trim());
+  if (activeRules.length === 0) { showToast('Add at least one rule', 'error'); return; }
+
+  log.innerHTML = dryRun ? '<span style="color:var(--warn)">— Preview mode — no files will be moved —</span><br>' : '';
+
+  const result = await window.electronAPI.readFolder(orgFolderPath);
+  if (result.error) { log.innerHTML += `<span class="org-log-err">Error: ${esc(result.error)}</span>`; return; }
+
+  let moved = 0;
+  for (const file of result) {
+    for (const rule of activeRules) {
+      const pattern = rule.match.trim();
+      // Glob-style: *.ext  or plain text match (case-insensitive substring)
+      let matches = false;
+      if (pattern.startsWith('*.')) {
+        const ext = pattern.slice(2).toLowerCase();
+        matches = file.ext.toLowerCase() === ext;
+      } else {
+        matches = file.name.toLowerCase().includes(pattern.toLowerCase());
+      }
+      if (!matches) continue;
+
+      const destFolder = rule.dest.trim();
+      if (dryRun) {
+        log.innerHTML += `<span class="org-log-ok">→ ${esc(file.name)}</span> <span style="color:#444">to</span> <span style="color:var(--accent)">${esc(destFolder)}/</span><br>`;
+        moved++;
+      } else {
+        const res = await window.electronAPI.moveFile({ folderPath: orgFolderPath, fileName: file.name, destFolder });
+        if (res.ok) {
+          log.innerHTML += `<span class="org-log-ok">✓ ${esc(file.name)} → ${esc(destFolder)}/</span><br>`;
+          moved++;
+        } else {
+          log.innerHTML += `<span class="org-log-err">✕ ${esc(file.name)}: ${esc(res.error)}</span><br>`;
+        }
+      }
+      break; // first matching rule wins
+    }
+  }
+  log.innerHTML += `<br><span style="color:var(--muted)">${dryRun ? 'Would move' : 'Moved'} ${moved} file(s).</span>`;
+  log.scrollTop = log.scrollHeight;
+  if (!dryRun && moved > 0) showToast(`Moved ${moved} file(s)`, 'ok');
+}
+
+document.getElementById('orgRunBtn').addEventListener('click',     () => runOrganizer(false));
+document.getElementById('orgPreviewBtn').addEventListener('click', () => runOrganizer(true));
+
+renderOrgRules();
+
+['helpLink','helpLink2'].forEach(id => {
+  document.getElementById(id).addEventListener('click', e => {
+    e.preventDefault(); document.getElementById('helpModal').classList.add('open');
+  });
+});
+document.getElementById('closeModal').addEventListener('click', () => document.getElementById('helpModal').classList.remove('open'));
+document.getElementById('helpModal').addEventListener('click', e => { if (e.target === document.getElementById('helpModal')) document.getElementById('helpModal').classList.remove('open'); });
+document.getElementById('closeLookupModal').addEventListener('click', () => document.getElementById('lookupModal').classList.remove('open'));
+document.getElementById('lookupModal').addEventListener('click', e => { if (e.target === document.getElementById('lookupModal')) document.getElementById('lookupModal').classList.remove('open'); });
+
+// ─── Init ──────────────────────────────────────────────────────────────────
+renderPresets();
+renderOverrides();
+updatePreview();
+</script>
+</body>
+</html>
