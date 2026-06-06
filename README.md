@@ -1,102 +1,96 @@
-# m72b file formatter — Desktop App
+#  m72b File Formatter
 
-A sleek, dark file-renaming tool. Drop files in, set a format template using tokens like `{TrackNumber}`, `{Artist}`, `{ext}`, and rename entire batches in one click.
-
----
-
-## What you need to install
-
-### 1. Node.js
-Download and install from: https://nodejs.org  
-Choose the **LTS** version (e.g. 20.x or 22.x).
-
-To verify it's installed, open a terminal and run:
-```
-node -v
-npm -v
-```
-
-That's it — no other software needed. npm comes bundled with Node.js.
-
----
-
-## How to run the app
-
-1. **Open a terminal** (Command Prompt / PowerShell on Windows, Terminal on Mac/Linux)
-
-2. **Navigate to this folder:**
-   ```
-   cd path/to/m72b-app
-   ```
-
-3. **Install dependencies** (first time only):
-   ```
-   npm install
-   ```
-
-4. **Launch the app:**
-   ```
-   npm start
-   ```
-
-The app window will open. You're good to go.
-
----
-
-## How to build a distributable (optional)
-
-To create a standalone installer you can share:
-
-```
-# Windows (.exe installer)
-npm run build-win
-
-# macOS (.dmg)
-npm run build-mac
-
-# Linux (.AppImage)
-npm run build-linux
-
-
-Output goes into the `dist/` folder.
-
-> **Note for macOS:** to build a `.dmg` you must be on a Mac.  
-> **Note for Windows:** to build an `.exe` you should be on Windows (or use CI).
-
----
+A simple desktop application that automatically organizes files into folders based on their file type.
 
 ## Features
 
-- **Format templates** — use tokens like `{TrackNumber} - {TrackName} - {Artist}.{ext}`
-- **Token chips** — click to insert tokens at cursor position
-- **Token overrides** — lock any token to a fixed value (e.g. Artist = Daft Punk)
-- **Saved presets** — save your favourite formats and switch between them
-- **Live preview** — see an example of the renamed output as you type
-- **Sort by date** — order files by modification date
-- **Native folder export** — pick a destination folder and write files directly
-- **Drag & drop** — drop files from Explorer/Finder
+- Organize files with one click
+- Sort images, videos, documents, archives, and more
+- Create folders automatically
+- Fast processing
+- Clean and simple interface
 
----
+## Supported File Types
 
-## Project structure
+| Category | Extensions |
+|-----------|------------|
+| Images | .png, .jpg, .jpeg, .gif, .webp |
+| Videos | .mp4, .mov, .avi, .mkv |
+| Documents | .pdf, .docx, .txt, .pptx |
+| Archives | .zip, .rar, .7z |
+| Audio | .mp3, .wav, .flac |
 
-```
-m72b-app/
-├── main.js        ← Electron main process (window, IPC, file writing)
-├── preload.js     ← Secure bridge (exposes electronAPI to the UI)
-├── index.html     ← The entire UI (all CSS + JS in one file)
-├── package.json   ← Dependencies and build config
-├── assets/        ← App icons (add icon.ico / icon.icns / icon.png here)
-└── README.md      ← This file
-```
+## How It Works
 
----
+Before:
 
-## Adding an app icon (optional)
+Downloads/
+├── cat.png
+├── report.pdf
+├── song.mp3
+├── movie.mp4
 
-Place your icon files in the `assets/` folder:
-- `icon.ico` — Windows
-- `icon.icns` — macOS  
-- `icon.png` — Linux (256×256 or larger)
+After:
 
-The icons are only used when building a distributable, not during `npm start`.
+Downloads/
+├── Images/
+│   └── cat.png
+├── Documents/
+│   └── report.pdf
+├── Audio/
+│   └── song.mp3
+└── Videos/
+    └── movie.mp4
+
+## Installation
+
+Download the latest release from the Releases section.
+
+## Usage
+
+1. Launch the application
+2. Select a folder
+3. Click Format
+4. Done!
+
+## Planned Features
+
+- Undo functionality
+- Custom file rules
+- Duplicate file detection
+- Empty folder cleanup
+- Dark mode
+- Drag & drop support
+- File preview
+
+## Roadmap
+
+### Version 1.0
+- Basic file sorting
+- Folder creation
+- Modern UI
+
+in the feature 
+
+### Version 1.1 
+- Undo feature
+- Custom categories
+- Settings page
+
+### Version 1.2
+- Duplicate finder
+- Recursive folder scanning
+- Performance improvements
+
+### Version 2.0
+- Plugin system
+- Advanced automation rules
+- Scheduled formatting
+
+## Contributing
+
+Contributions, bug reports, and feature suggestions are welcome.
+
+## License
+
+MIT License
