@@ -1,4 +1,5 @@
 const { spawnSync } = require('child_process');
+const fs = require('fs');
 const path = require('path');
 
 const root = path.resolve(__dirname, '..');
@@ -15,6 +16,18 @@ function run(args) {
   if (result.status !== 0) process.exit(result.status || 1);
 }
 
+function removeOldBuilds() {
+  // Only remove build output owned by this project.
+  for (const output of ['dist', "m72b's test build"]) {
+    const target = path.join(root, output);
+    if (fs.existsSync(target)) {
+      console.log(`Removing old build output: ${output}`);
+      fs.rmSync(target, { recursive: true, force: true });
+    }
+  }
+}
+
+removeOldBuilds();
 console.log('Installing or refreshing build dependencies...');
 run(['install']);
 

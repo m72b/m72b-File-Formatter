@@ -54,6 +54,11 @@ The command installs dependencies when needed, builds the installer, and writes
 `m72b-file-formatter-Setup-1.0.1.exe` to `dist/`. You can then share that file
 or upload it to the GitHub Releases section.
 
+Each build removes only this project’s previous `dist/` output before packaging.
+When a user runs a newer setup file, Electron Builder’s installer detects the
+existing installation for this app ID and upgrades it in place rather than
+creating a second copy. User app data is preserved.
+
 ## Usage
 
 1. Launch the application

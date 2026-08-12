@@ -22,6 +22,12 @@
       "icon": "assets/icon.ico",
       "artifactName": "m72b-file-formatter-Setup-${version}.${ext}"
     },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": false,
+      "deleteAppDataOnUninstall": false
+    },
     "mac": { "target": "dmg" },
     "linux": {
       "target": "AppImage",
