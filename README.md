@@ -4,7 +4,7 @@ An Electron desktop app for batch-renaming files, applying reusable filename tem
 
 ## Download
 
-Windows users can download the latest `m72b-file-formatter-Setup-2.0.0.exe` from [GitHub Releases](https://github.com/m72b/m72b-File-Formatter/releases). The installer includes Electron and the complete app; no Node.js or separate dependencies are required.
+Windows users can download the latest `Setup2.0.0.exe` from [GitHub Releases](https://github.com/m72b/m72b-File-Formatter/releases). The installer includes Electron and the complete app; no Node.js or separate dependencies are required.
 
 ## Features
 
