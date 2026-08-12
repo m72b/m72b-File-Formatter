@@ -48,13 +48,6 @@ scripts/run-installer-with-log.ps1  Installer diagnostics helper
 assets/                     Application icons
 ```
 
-## Release checklist
-
-1. Update the version in `package.json` and `package-lock.json`.
-2. Run `npm install`.
-3. Run `npm run make-installer`.
-4. Test the generated installer on a clean Windows account.
-5. Create a GitHub Release and upload the `.exe` from the build directory.
 
 ## License
 
