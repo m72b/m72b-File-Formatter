@@ -1,4 +1,4 @@
-# m72b File Formatter v2
+# File Formatter ver.2
 
 An Electron desktop app for batch-renaming files, applying reusable filename templates, looking up music metadata, and organizing files into subfolders.
 
