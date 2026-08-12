@@ -44,7 +44,15 @@ Downloads/
 
 ## Installation
 
-Download the latest release from the Releases section.
+To generate a Windows desktop setup installer directly from this repository:
+
+```bash
+npm run make-installer
+```
+
+The command installs dependencies when needed, builds the installer, and writes
+`m72b-file-formatter-Setup-1.0.1.exe` to `dist/`. You can then share that file
+or upload it to the GitHub Releases section.
 
 ## Usage
 
