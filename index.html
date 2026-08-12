@@ -53,6 +53,10 @@ header::after{content:'M72B';position:absolute;right:-10px;top:-22px;font-family
 .add-token-input{flex:1;background:#060606;border:1px solid #2a1a40;border-radius:6px;color:var(--text);font:10px 'DM Mono',monospace;padding:5px 7px;outline:none;}
 .rule-help{font-size:9px;color:var(--muted);line-height:1.5;margin-top:5px;}
 .rule-toggle{display:flex;align-items:center;gap:7px;font-size:10px;color:var(--accent3);cursor:pointer;user-select:none;}
+.filename-rule-grid{display:grid;grid-template-columns:1fr;gap:6px;margin-top:8px;}
+.filename-rule-grid label{display:flex;flex-direction:column;gap:4px;font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.5px;}
+.filename-rule-grid input{background:#060606;border:1.5px solid #1a1a1a;border-radius:6px;color:var(--text);font-family:'DM Mono',monospace;font-size:10px;padding:6px 8px;outline:none;width:100%;user-select:text;transition:border-color .15s;}
+.filename-rule-grid input:focus{border-color:var(--border-hl);}
 
 textarea.format-input{width:100%;background:#060606;border:1.5px solid #1e1e1e;border-radius:var(--radius);color:var(--text);font-family:'DM Mono',monospace;font-size:11px;padding:9px 11px;resize:none;height:64px;outline:none;transition:border-color .2s;line-height:1.6;user-select:text;}
 textarea.format-input:focus{border-color:var(--border-hl);}
@@ -287,8 +291,12 @@ input.preset-name-inp::placeholder{color:var(--muted);}
 
       <div class="panel-section">
         <div class="section-label">Filename Rules</div>
-        <label class="rule-toggle"><input type="checkbox" id="userInputRule" checked> Rename names containing “user input”</label>
-        <div class="rule-help">Changes the complete base filename to <span style="color:var(--accent)">user input 2</span>. The original extension is preserved.</div>
+        <label class="rule-toggle"><input type="checkbox" id="userInputRule" checked> Rename names containing a phrase</label>
+        <div class="filename-rule-grid">
+          <label>Phrase to find<input type="text" id="specialRuleFind" value="user input" placeholder="example: like"></label>
+          <label>Rename matching files to<input type="text" id="specialRuleReplace" value="user input 2" placeholder="example: like 2"></label>
+        </div>
+        <div class="rule-help">Only filenames containing the phrase are changed. Other files stay untouched, and the original extension is preserved.</div>
       </div>
 
       <div class="panel-section" style="padding-bottom:6px">
@@ -396,7 +404,7 @@ input.preset-name-inp::placeholder{color:var(--muted);}
       <b style="color:var(--accent3)">1. Load files</b><br>Pick a folder or select individual files. The original extension is kept automatically when a new name does not include one.<br><br>
       <b style="color:var(--accent3)">2. Build a template</b><br>Enter a format such as <code>{TrackNumber} - {TrackName} - {Artist}.{ext}</code>. Click a token chip to insert it, or add your own token and provide its value under Token Overrides.<br><br>
       <b style="color:var(--accent3)">3. Apply and save</b><br>Apply the format, edit rows directly, then use Save or Save All. Revert removes unsaved changes.<br><br>
-      <b style="color:var(--accent3)">4. Filename rule</b><br>The left-panel rule changes any filename containing “user input” to <code>user input 2</code>. The extension stays unchanged.<br><br>
+      <b style="color:var(--accent3)">4. Filename rule</b><br>The left-panel rule can look for any phrase, such as <code>like</code>, and rename only matching files to your chosen new base name, such as <code>like 2</code>. The extension stays unchanged.<br><br>
       <b style="color:var(--accent3)">5. Organizer</b><br>Choose a source folder, add rules such as <code>*.mp3</code>, preview, then run the organizer.
     </div><br>
     <button class="btn btn-sm" id="closeDocsBtn">Close</button>
@@ -522,10 +530,23 @@ function ensureExtension(name, ext) {
 
 function specialRename(name) {
   if (!document.getElementById('userInputRule')?.checked) return name;
+  const find = document.getElementById('specialRuleFind')?.value.trim();
+  const replacement = document.getElementById('specialRuleReplace')?.value.trim();
+  if (!find || !replacement) return name;
   const dot = name.lastIndexOf('.');
   const base = dot > 0 ? name.slice(0, dot) : name;
   const ext = dot > 0 ? name.slice(dot) : '';
-  return base.toLowerCase().includes('user input') ? `user input 2${ext}` : name;
+  return base.toLowerCase().includes(find.toLowerCase()) ? `${replacement}${ext}` : name;
+}
+
+function refreshFilenameRule() {
+  fileRecords.forEach(rec => {
+    if (rec.status !== 'saved') {
+      rec.newName = specialRename(rec.name);
+      rec.status = rec.newName === rec.name ? 'ready' : 'pending';
+    }
+  });
+  renderFiles();
 }
 
 function renderTokenChips() {
@@ -896,13 +917,17 @@ document.getElementById('addTokenBtn').addEventListener('click', () => {
 });
 
 document.getElementById('userInputRule').addEventListener('change', () => {
-  fileRecords.forEach(rec => {
-    if (rec.status !== 'saved') {
-      rec.newName = specialRename(rec.name);
-      rec.status = rec.newName === rec.name ? 'ready' : 'pending';
-    }
-  });
-  renderFiles();
+  refreshFilenameRule();
+});
+
+document.getElementById('specialRuleFind').addEventListener('input', e => {
+  localStorage.setItem('m72b_special_rule_find_v1', e.target.value);
+  refreshFilenameRule();
+});
+
+document.getElementById('specialRuleReplace').addEventListener('input', e => {
+  localStorage.setItem('m72b_special_rule_replace_v1', e.target.value);
+  refreshFilenameRule();
 });
 
 document.getElementById('openDocsBtn').addEventListener('click', () => document.getElementById('docsModal').classList.add('open'));
@@ -1068,6 +1093,8 @@ document.getElementById('helpModal').addEventListener('click', e => { if (e.targ
 document.getElementById('closeLookupModal').addEventListener('click', () => document.getElementById('lookupModal').classList.remove('open'));
 document.getElementById('lookupModal').addEventListener('click', e => { if (e.target === document.getElementById('lookupModal')) document.getElementById('lookupModal').classList.remove('open'); });
 
+document.getElementById('specialRuleFind').value = localStorage.getItem('m72b_special_rule_find_v1') || 'user input';
+document.getElementById('specialRuleReplace').value = localStorage.getItem('m72b_special_rule_replace_v1') || 'user input 2';
 renderPresets();
 renderOverrides();
 renderTokenChips();

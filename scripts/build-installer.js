@@ -36,7 +36,7 @@ function closeRunningApp() {
 
 closeRunningApp();
 removeBuildOutput('dist');
-removeBuildOutput('release');
+removeBuildOutput('release', false);
 removeBuildOutput("m72b's test build", false);
 console.log('Installing or refreshing build dependencies...');
 run(['install']);

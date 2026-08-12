@@ -12,7 +12,7 @@ Windows users can download the latest `m72b-file-formatter-Setup-2.0.0.exe` from
 - Templates with built-in tokens such as `{TrackNumber}`, `{TrackName}`, `{Artist}`, `{Year}`, `{ext}`, `{original}`, `{UPPER}`, `{lower}`, and `{n}`.
 - Add custom tokens and define fixed values with Token Overrides.
 - Preserve a file's original extension when a new name does not specify one.
-- Optional rule that changes filenames containing `user input` to `user input 2`.
+- Optional filename rule that finds a custom phrase and renames only matching files to your chosen new name.
 - Saved presets, date sorting, drag-and-drop support, and inline editing.
 - MusicBrainz lookup for audio filenames.
 - File Organizer with preview mode and match rules such as `*.mp3`.
