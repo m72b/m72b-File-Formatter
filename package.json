@@ -1,6 +1,6 @@
 {
   "name": "m72b-file-formatter",
-  "version": "1.0.1",
+  "version": "1.0.4",
   "author": "m72b",
   "description": "m72b file formatter — rename engine",
   "main": "main.js",
@@ -26,7 +26,8 @@
       "oneClick": true,
       "perMachine": false,
       "allowToChangeInstallationDirectory": false,
-      "deleteAppDataOnUninstall": false
+      "deleteAppDataOnUninstall": false,
+      "include": "scripts/installer.nsh"
     },
     "mac": { "target": "dmg" },
     "linux": {

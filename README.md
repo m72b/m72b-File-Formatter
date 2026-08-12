@@ -51,13 +51,28 @@ npm run make-installer
 ```
 
 The command installs dependencies when needed, builds the installer, and writes
-`m72b-file-formatter-Setup-1.0.1.exe` to `dist/`. You can then share that file
+`m72b-file-formatter-Setup-1.0.4.exe` to `dist/`. You can then share that file
 or upload it to the GitHub Releases section.
 
 Each build removes only this project’s previous `dist/` output before packaging.
 When a user runs a newer setup file, Electron Builder’s installer detects the
 existing installation for this app ID and upgrades it in place rather than
 creating a second copy. User app data is preserved.
+
+The setup also closes a running `m72b file formatter` process before updating,
+so users do not need to close the app manually.
+
+### Installer troubleshooting log
+
+If setup still reports an error, run this from PowerShell in the project folder:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\run-installer-with-log.ps1 .\dist\m72b-file-formatter-Setup-1.0.4.exe
+```
+
+The detailed log is saved to `%TEMP%\m72b-file-formatter-installer.log`. It
+includes the install directory, process-close result, old-uninstaller result,
+and each installer event. Send that log when reporting the problem.
 
 ## Usage
 
