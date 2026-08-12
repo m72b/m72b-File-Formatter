@@ -2,7 +2,6 @@ const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
-// Keep a global reference to prevent garbage collection
 let mainWindow;
 
 function createWindow() {
@@ -11,7 +10,7 @@ function createWindow() {
     height: 780,
     minWidth: 900,
     minHeight: 600,
-    frame: process.platform === 'darwin', // native frame on macOS, custom on Windows/Linux
+    frame: process.platform === 'darwin',
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
     backgroundColor: '#000000',
     icon: path.join(__dirname, 'assets', process.platform === 'win32' ? 'icon.ico' : 'icon.png'),
@@ -21,17 +20,15 @@ function createWindow() {
       nodeIntegration: false,
       sandbox: false,
     },
-    show: false, // show after ready-to-show for a clean launch
+    show: false,
   });
 
   mainWindow.loadFile('index.html');
 
-  // Show once fully rendered
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
   });
 
-  // Open external links in the system browser
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
     return { action: 'deny' };
@@ -42,7 +39,6 @@ app.whenReady().then(() => {
   createWindow();
 
   app.on('activate', () => {
-    // macOS: re-create window when dock icon is clicked and no windows are open
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
 });
@@ -51,9 +47,7 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
 
-// ─── IPC Handlers ─────────────────────────────────────────────────────────────
 
-// Window controls (for custom titlebar on Windows/Linux)
 ipcMain.on('win-minimize', () => mainWindow?.minimize());
 ipcMain.on('win-maximize', () => {
   if (mainWindow?.isMaximized()) mainWindow.unmaximize();
@@ -61,7 +55,6 @@ ipcMain.on('win-maximize', () => {
 });
 ipcMain.on('win-close', () => mainWindow?.close());
 
-// Folder picker
 ipcMain.handle('pick-folder', async () => {
   const result = await dialog.showOpenDialog(mainWindow, {
     properties: ['openDirectory', 'createDirectory'],
@@ -133,5 +126,4 @@ ipcMain.handle('musicbrainz-search', async (_event, query) => {
   } catch (err) { return { ok: false, error: err.message }; }
 });
 
-// Expose platform string to renderer
 ipcMain.handle('get-platform', () => process.platform);

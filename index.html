@@ -46,7 +46,13 @@ header::after{content:'M72B';position:absolute;right:-10px;top:-22px;font-family
 .left-scroll::-webkit-scrollbar{width:4px;}
 .left-scroll::-webkit-scrollbar-thumb{background:#1e1e1e;border-radius:2px;}
 .panel-section{padding:16px 18px;border-bottom:1px solid #141414;}
-.section-label{font-size:9px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;}
+.section-label{font-size:11px;color:var(--accent3);letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;font-weight:600;}
+.token-section{background:linear-gradient(135deg,rgba(123,47,255,.12),rgba(8,8,8,.4));border:1px solid var(--border-hl);border-radius:10px;margin:12px 14px;padding:13px 14px;}
+.token-section .section-label{color:var(--accent);font-size:12px;}
+.add-token-row{display:flex;gap:5px;margin-top:8px;}
+.add-token-input{flex:1;background:#060606;border:1px solid #2a1a40;border-radius:6px;color:var(--text);font:10px 'DM Mono',monospace;padding:5px 7px;outline:none;}
+.rule-help{font-size:9px;color:var(--muted);line-height:1.5;margin-top:5px;}
+.rule-toggle{display:flex;align-items:center;gap:7px;font-size:10px;color:var(--accent3);cursor:pointer;user-select:none;}
 
 textarea.format-input{width:100%;background:#060606;border:1.5px solid #1e1e1e;border-radius:var(--radius);color:var(--text);font-family:'DM Mono',monospace;font-size:11px;padding:9px 11px;resize:none;height:64px;outline:none;transition:border-color .2s;line-height:1.6;user-select:text;}
 textarea.format-input:focus{border-color:var(--border-hl);}
@@ -250,6 +256,7 @@ input.preset-name-inp::placeholder{color:var(--muted);}
   <div class="header-spacer"></div>
   <div class="header-actions">
     <button class="nav-btn" id="openOrganizerBtn">📁 File Organizer</button>
+    <button class="nav-btn" id="openDocsBtn">Documentation</button>
     <a href="#" id="helpLink" style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);text-decoration:none;letter-spacing:1px;">tokens ?</a>
   </div>
 </header>
@@ -260,19 +267,11 @@ input.preset-name-inp::placeholder{color:var(--muted);}
   <div class="left-panel">
     <div class="left-scroll">
 
-      <div class="panel-section">
+      <div class="panel-section token-section">
         <div class="section-label">Format Template</div>
         <textarea class="format-input" id="formatInput" placeholder="{TrackNumber} - {TrackName} - {Artist}.{ext}"></textarea>
-        <div class="token-chips" id="chipArea">
-          <span class="chip" data-token="{TrackNumber}">TrackNumber</span>
-          <span class="chip" data-token="{TrackName}">TrackName</span>
-          <span class="chip" data-token="{Artist}">Artist</span>
-          <span class="chip" data-token="{Album}">Album</span>
-          <span class="chip" data-token="{Year}">Year</span>
-          <span class="chip" data-token="{ext}">ext</span>
-          <span class="chip" data-token="{n}">counter</span>
-          <span class="chip" data-token="{original}">original</span>
-        </div>
+        <div class="token-chips" id="chipArea"></div>
+        <div class="add-token-row"><input class="add-token-input" id="newTokenInput" placeholder="Add token name…"><button class="btn btn-sm" id="addTokenBtn">+ Add</button></div>
         <div class="chip-hint">↑ click to insert at cursor &nbsp;·&nbsp; <a href="#" id="helpLink2" style="color:var(--accent2);text-decoration:none">all tokens →</a></div>
         <div class="preset-save-row">
           <input class="preset-name-inp" type="text" id="presetNameInput" placeholder="Preset name…">
@@ -284,6 +283,12 @@ input.preset-name-inp::placeholder{color:var(--muted);}
         <div class="section-label">Token Overrides</div>
         <div class="token-override-list" id="overrideList"></div>
         <button class="add-override-btn" id="addOverrideBtn">+ Add override</button>
+      </div>
+
+      <div class="panel-section">
+        <div class="section-label">Filename Rules</div>
+        <label class="rule-toggle"><input type="checkbox" id="userInputRule" checked> Rename names containing “user input”</label>
+        <div class="rule-help">Changes the complete base filename to <span style="color:var(--accent)">user input 2</span>. The original extension is preserved.</div>
       </div>
 
       <div class="panel-section" style="padding-bottom:6px">
@@ -384,6 +389,20 @@ input.preset-name-inp::placeholder{color:var(--muted);}
   </div>
 </div>
 
+<div class="modal-bg" id="docsModal">
+  <div class="modal-box" style="max-width:620px;max-height:85vh;overflow:auto">
+    <div class="modal-title">Documentation &amp; Tutorial</div>
+    <div style="font-size:10px;color:var(--text);line-height:1.8">
+      <b style="color:var(--accent3)">1. Load files</b><br>Pick a folder or select individual files. The original extension is kept automatically when a new name does not include one.<br><br>
+      <b style="color:var(--accent3)">2. Build a template</b><br>Enter a format such as <code>{TrackNumber} - {TrackName} - {Artist}.{ext}</code>. Click a token chip to insert it, or add your own token and provide its value under Token Overrides.<br><br>
+      <b style="color:var(--accent3)">3. Apply and save</b><br>Apply the format, edit rows directly, then use Save or Save All. Revert removes unsaved changes.<br><br>
+      <b style="color:var(--accent3)">4. Filename rule</b><br>The left-panel rule changes any filename containing “user input” to <code>user input 2</code>. The extension stays unchanged.<br><br>
+      <b style="color:var(--accent3)">5. Organizer</b><br>Choose a source folder, add rules such as <code>*.mp3</code>, preview, then run the organizer.
+    </div><br>
+    <button class="btn btn-sm" id="closeDocsBtn">Close</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <!-- ── File Organizer panel ──────────────────────────────────────────────── -->
@@ -433,12 +452,12 @@ if (isElectron && platform !== 'darwin') {
   document.getElementById('tbClose').onclick = () => window.electronAPI.winClose();
 }
 
-// ─── State ─────────────────────────────────────────────────────────────────
 let folderPath = null;
 let fileRecords = []; // [{name, ext, size, mtime, newName, status:'pending'|'saved'|'error'}]
 let presets = JSON.parse(localStorage.getItem('m72b_presets_v2') || '[]');
 let activePresetId = null;
 let overrides = [];
+let customTokens = JSON.parse(localStorage.getItem('m72b_custom_tokens_v1') || '[]');
 let pendingLookupRow = null; // {idx, originalName}
 
 if (presets.length === 0) {
@@ -451,27 +470,21 @@ if (presets.length === 0) {
 }
 function savePresets() { localStorage.setItem('m72b_presets_v2', JSON.stringify(presets)); }
 
-// ─── Token extraction (smarter v2) ─────────────────────────────────────────
 function extractTokens(filename, idx) {
   const dotIdx = filename.lastIndexOf('.');
   const ext  = dotIdx > -1 ? filename.slice(dotIdx + 1) : '';
   const base = dotIdx > -1 ? filename.slice(0, dotIdx) : filename;
 
-  // Split on common separators: " - ", " – ", " | ", "_", "·"
   const parts = base.split(/\s*[-–—|·]\s*|\s{2,}/).map(p => p.trim()).filter(Boolean);
 
-  // Detect leading track number (e.g. "01", "1.", "Track 3")
   const numMatch = base.match(/^(?:track\s*)?(\d{1,3})[\s.\-_]/i);
   const trackNumber = numMatch ? numMatch[1].padStart(2, '0') : String(idx + 1).padStart(2, '0');
 
-  // Remove pure-number parts to get clean name parts
   const cleanParts = parts.map(p => p.replace(/^(?:track\s*)?\d{1,3}$/, '').trim()).filter(Boolean);
 
-  // Year: 4-digit between 1900-2099
   const yearMatch = base.match(/\b((?:19|20)\d{2})\b/);
   const year = yearMatch ? yearMatch[1] : String(new Date().getFullYear());
 
-  // Underscores → spaces for display
   const humanise = s => s.replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
 
   const tokens = {
@@ -501,6 +514,36 @@ function applyFormat(format, tokens) {
   return { name: result, hasUnknown: false };
 }
 
+function ensureExtension(name, ext) {
+  const clean = String(name || '').trim();
+  if (!clean || !ext || /\.[^\\/.]+$/.test(clean)) return clean;
+  return `${clean}.${ext}`;
+}
+
+function specialRename(name) {
+  if (!document.getElementById('userInputRule')?.checked) return name;
+  const dot = name.lastIndexOf('.');
+  const base = dot > 0 ? name.slice(0, dot) : name;
+  const ext = dot > 0 ? name.slice(dot) : '';
+  return base.toLowerCase().includes('user input') ? `user input 2${ext}` : name;
+}
+
+function renderTokenChips() {
+  const builtIns = [
+    ['TrackNumber','TrackNumber'],['TrackName','TrackName'],['Artist','Artist'],['Album','Album'],
+    ['Year','Year'],['ext','ext'],['n','counter'],['original','original']
+  ];
+  const area = document.getElementById('chipArea');
+  area.innerHTML = [...builtIns, ...customTokens.map(t => [t, t])]
+    .map(([token, label]) => `<span class="chip" data-token="{${esc(token)}}">${esc(label)}</span>`).join('');
+  area.querySelectorAll('.chip').forEach(chip => chip.addEventListener('click', () => {
+    const ta = document.getElementById('formatInput');
+    const pos = ta.selectionStart, val = ta.value, token = chip.dataset.token;
+    ta.value = val.slice(0, pos) + token + val.slice(pos);
+    ta.focus(); ta.selectionStart = ta.selectionEnd = pos + token.length; updatePreview();
+  }));
+}
+
 function fmtSize(bytes) {
   if (!bytes) return '—';
   if (bytes < 1024) return bytes + ' B';
@@ -508,7 +551,6 @@ function fmtSize(bytes) {
   return (bytes/1024/1024).toFixed(1) + ' MB';
 }
 
-// ─── Load folder ───────────────────────────────────────────────────────────
 async function loadFolder(path) {
   folderPath = path;
   document.getElementById('folderPath').textContent = path;
@@ -520,15 +562,14 @@ async function loadFolder(path) {
 
   fileRecords = result.map((f, i) => ({
     ...f,
-    newName: f.name,
-    status: 'ready',
+    newName: specialRename(f.name),
+    status: specialRename(f.name) === f.name ? 'ready' : 'pending',
     idx: i,
   }));
   renderFiles();
   showToast(`${fileRecords.length} files loaded`, 'ok');
 }
 
-// ─── Sorting ───────────────────────────────────────────────────────────────
 function getSorted() {
   const copy = [...fileRecords];
   if (document.getElementById('sortByDate').checked)
@@ -536,7 +577,6 @@ function getSorted() {
   return copy;
 }
 
-// ─── Render files ──────────────────────────────────────────────────────────
 function renderFiles() {
   const list   = document.getElementById('fileList');
   const count  = document.getElementById('filesCount');
@@ -577,7 +617,6 @@ function renderFiles() {
         <button class="row-action-btn del-btn" data-name="${esc(f.name)}">✕</button>
       </div>`;
 
-    // Inline edit → mark pending
     const inp = row.querySelector('.file-renamed-input');
     inp.addEventListener('input', () => {
       const rec = fileRecords.find(r => r.name === f.name);
@@ -590,16 +629,13 @@ function renderFiles() {
       updatePreview();
     });
 
-    // Save button
     row.querySelector('.save-btn').addEventListener('click', () => saveRow(f.name));
 
-    // Remove from list button
     row.querySelector('.del-btn').addEventListener('click', () => {
       fileRecords = fileRecords.filter(r => r.name !== f.name);
       renderFiles();
     });
 
-    // Lookup button
     const lb = row.querySelector('.lookup-btn');
     if (lb) lb.addEventListener('click', () => openLookup(f.name));
 
@@ -617,7 +653,6 @@ function statusPill(f) {
   return '';
 }
 
-// ─── Save a single row ─────────────────────────────────────────────────────
 async function saveRow(originalName) {
   if (!folderPath) { showToast('No folder selected', 'error'); return; }
   const rec = fileRecords.find(r => r.name === originalName);
@@ -625,6 +660,7 @@ async function saveRow(originalName) {
   if (rec.newName === rec.name) { showToast('Name unchanged', ''); return; }
   if (!rec.newName.trim()) { showToast('Name cannot be empty', 'error'); return; }
 
+  rec.newName = ensureExtension(rec.newName, rec.ext);
   const res = await window.electronAPI.renameFile({
     folderPath, oldName: rec.name, newName: rec.newName
   });
@@ -640,7 +676,6 @@ async function saveRow(originalName) {
   renderFiles();
 }
 
-// ─── Save all pending ──────────────────────────────────────────────────────
 async function saveAll() {
   const pending = fileRecords.filter(r => r.newName !== r.name && r.status !== 'saved');
   if (pending.length === 0) { showToast('Nothing to save', ''); return; }
@@ -648,7 +683,6 @@ async function saveAll() {
   showToast(`Saved ${pending.length} files`, 'ok');
 }
 
-// ─── Apply format template to all ─────────────────────────────────────────
 function applyFormatAll() {
   const format = document.getElementById('formatInput').value.trim();
   if (!format) { showToast('Set a format template first', 'error'); return; }
@@ -657,7 +691,7 @@ function applyFormatAll() {
     const tokens = extractTokens(rec.name, i);
     const result = applyFormat(format, tokens);
     if (result && !result.hasUnknown) {
-      rec.newName = result.name;
+      rec.newName = ensureExtension(result.name, rec.ext);
       if (rec.newName !== rec.name) { rec.status = 'pending'; changed++; }
     }
   });
@@ -665,13 +699,11 @@ function applyFormatAll() {
   showToast(`Format applied to ${changed} file${changed !== 1 ? 's' : ''}`, 'success');
 }
 
-// ─── Revert all pending ────────────────────────────────────────────────────
 function revertAll() {
   fileRecords.forEach(rec => { if (rec.status !== 'saved') { rec.newName = rec.name; rec.status = 'ready'; }});
   renderFiles(); showToast('All pending changes reverted', '');
 }
 
-// ─── Bulk bar ──────────────────────────────────────────────────────────────
 function updateBulkBar() {
   const bar   = document.getElementById('bulkBar');
   const label = document.getElementById('bulkLabel');
@@ -684,7 +716,6 @@ function updateBulkBar() {
   }
 }
 
-// ─── Preview ───────────────────────────────────────────────────────────────
 function updatePreview() {
   const bar    = document.getElementById('previewBar');
   const val    = document.getElementById('previewValue');
@@ -697,14 +728,12 @@ function updatePreview() {
   val.textContent = r ? r.name : '—';
 }
 
-// ─── MusicBrainz lookup ────────────────────────────────────────────────────
 async function openLookup(fileName) {
   pendingLookupRow = fileName;
   document.getElementById('lookupModalFile').textContent = fileName;
   document.getElementById('lookupModalBody').innerHTML = '<div style="color:var(--muted);font-size:10px;">Searching MusicBrainz…</div>';
   document.getElementById('lookupModal').classList.add('open');
 
-  // Build query from filename (strip extension, replace separators)
   const dotIdx = fileName.lastIndexOf('.');
   const base   = dotIdx > -1 ? fileName.slice(0, dotIdx) : fileName;
   const query  = base.replace(/[_\-–—|·]+/g, ' ').replace(/\s+/g, ' ').trim();
@@ -769,14 +798,12 @@ async function lookupAll() {
       rec.status   = 'found';
       found++;
     }
-    // Small delay to respect rate limits
     await new Promise(r => setTimeout(r, 200));
   }
   renderFiles();
   showToast(`Found metadata for ${found} / ${audioFiles.length} files`, found > 0 ? 'ok' : 'error');
 }
 
-// ─── Presets ───────────────────────────────────────────────────────────────
 function renderPresets() {
   const c = document.getElementById('presetsList');
   if (presets.length === 0) {
@@ -808,7 +835,6 @@ function renderPresets() {
   });
 }
 
-// ─── Overrides ─────────────────────────────────────────────────────────────
 function renderOverrides() {
   const list = document.getElementById('overrideList');
   list.innerHTML = '';
@@ -849,7 +875,6 @@ function showToast(msg, type = '') {
   clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 2800);
 }
 
-// ─── Events ────────────────────────────────────────────────────────────────
 document.getElementById('pickFolderBtn').addEventListener('click', async () => {
   const p = await window.electronAPI.pickFolder();
   if (p) loadFolder(p);
@@ -861,14 +886,29 @@ document.getElementById('formatInput').addEventListener('input', () => {
 
 document.getElementById('sortByDate').addEventListener('change', renderFiles);
 
-document.querySelectorAll('.chip').forEach(chip => {
-  chip.addEventListener('click', () => {
-    const ta = document.getElementById('formatInput');
-    const pos = ta.selectionStart, val = ta.value;
-    ta.value = val.slice(0, pos) + chip.dataset.token + val.slice(pos);
-    ta.focus(); ta.selectionStart = ta.selectionEnd = pos + chip.dataset.token.length;
-    updatePreview();
+document.getElementById('addTokenBtn').addEventListener('click', () => {
+  const input = document.getElementById('newTokenInput');
+  const token = input.value.trim().replace(/[^A-Za-z0-9_]/g, '');
+  if (!token) { showToast('Enter a token name', 'error'); return; }
+  if (!customTokens.includes(token)) customTokens.push(token);
+  localStorage.setItem('m72b_custom_tokens_v1', JSON.stringify(customTokens));
+  input.value = ''; renderTokenChips(); showToast(`Added {${token}}`, 'ok');
+});
+
+document.getElementById('userInputRule').addEventListener('change', () => {
+  fileRecords.forEach(rec => {
+    if (rec.status !== 'saved') {
+      rec.newName = specialRename(rec.name);
+      rec.status = rec.newName === rec.name ? 'ready' : 'pending';
+    }
   });
+  renderFiles();
+});
+
+document.getElementById('openDocsBtn').addEventListener('click', () => document.getElementById('docsModal').classList.add('open'));
+document.getElementById('closeDocsBtn').addEventListener('click', () => document.getElementById('docsModal').classList.remove('open'));
+document.getElementById('docsModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('docsModal')) document.getElementById('docsModal').classList.remove('open');
 });
 
 document.getElementById('savePresetBtn').addEventListener('click', () => {
@@ -893,7 +933,6 @@ document.getElementById('lookupAllBtn').addEventListener('click', lookupAll);
 document.getElementById('saveAllBtn').addEventListener('click', saveAll);
 document.getElementById('revertAllBtn').addEventListener('click', revertAll);
 
-// ── Open organizer as in-page panel ────────────────────────────────────────
 document.getElementById('openOrganizerBtn').addEventListener('click', () => {
   document.getElementById('organizerOverlay').classList.add('open');
 });
@@ -905,14 +944,11 @@ document.getElementById('organizerOverlay').addEventListener('click', e => {
     document.getElementById('organizerOverlay').classList.remove('open');
 });
 
-// ── Pick individual audio files ────────────────────────────────────────────
 document.getElementById('pickFilesBtn').addEventListener('click', async () => {
   if (!isElectron) { showToast('File picker requires the desktop app', 'error'); return; }
   const files = await window.electronAPI.pickFiles();
   if (!files || files.length === 0) return;
 
-  // Group by their common parent directory (use the first file's dir as folderPath)
-  // electronAPI.pickFiles returns [{name, dir, ext, size, mtime}, ...]
   const firstDir = files[0].dir;
   folderPath = firstDir;
   document.getElementById('folderPath').textContent = `${files.length} file(s) from ${firstDir}`;
@@ -923,15 +959,14 @@ document.getElementById('pickFilesBtn').addEventListener('click', async () => {
     ext:     f.ext,
     size:    f.size,
     mtime:   f.mtime,
-    newName: f.name,
-    status:  'ready',
+    newName: specialRename(f.name),
+    status:  specialRename(f.name) === f.name ? 'ready' : 'pending',
     idx:     i,
   }));
   renderFiles();
   showToast(`${fileRecords.length} file(s) loaded`, 'ok');
 });
 
-// ── Organizer panel logic ──────────────────────────────────────────────────
 let orgFolderPath = null;
 let orgRules = [{ match: '', dest: '' }];
 
@@ -988,7 +1023,6 @@ async function runOrganizer(dryRun) {
   for (const file of result) {
     for (const rule of activeRules) {
       const pattern = rule.match.trim();
-      // Glob-style: *.ext  or plain text match (case-insensitive substring)
       let matches = false;
       if (pattern.startsWith('*.')) {
         const ext = pattern.slice(2).toLowerCase();
@@ -1034,9 +1068,9 @@ document.getElementById('helpModal').addEventListener('click', e => { if (e.targ
 document.getElementById('closeLookupModal').addEventListener('click', () => document.getElementById('lookupModal').classList.remove('open'));
 document.getElementById('lookupModal').addEventListener('click', e => { if (e.target === document.getElementById('lookupModal')) document.getElementById('lookupModal').classList.remove('open'); });
 
-// ─── Init ──────────────────────────────────────────────────────────────────
 renderPresets();
 renderOverrides();
+renderTokenChips();
 updatePreview();
 </script>
 </body>
