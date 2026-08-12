@@ -12,9 +12,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // Open a native folder picker dialog; resolves to the selected path or null
   pickFolder: () => ipcRenderer.invoke('pick-folder'),
+  readFolder: (folderPath) => ipcRenderer.invoke('read-folder', folderPath),
+  pickFiles: () => ipcRenderer.invoke('pick-files'),
+  renameFile: (payload) => ipcRenderer.invoke('rename-file', payload),
+  moveFile: (payload) => ipcRenderer.invoke('move-file', payload),
+  musicBrainzSearch: (query) => ipcRenderer.invoke('musicbrainz-search', query),
 
-  // Write renamed files to disk
-  // files: Array<{ newName: string, data: string (base64) }>
-  // folderPath: string
-  saveFiles: (payload) => ipcRenderer.invoke('save-files', payload),
 });

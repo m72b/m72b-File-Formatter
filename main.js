@@ -14,7 +14,7 @@ function createWindow() {
     frame: process.platform === 'darwin', // native frame on macOS, custom on Windows/Linux
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
     backgroundColor: '#000000',
-    icon: path.join(__dirname, 'assets', process.platform === 'win32' ? 'icon.ico' : process.platform === 'darwin' ? 'icon.icns' : 'icon.png'),
+    icon: path.join(__dirname, 'assets', process.platform === 'win32' ? 'icon.ico' : 'icon.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -71,25 +71,66 @@ ipcMain.handle('pick-folder', async () => {
   return result.filePaths[0];
 });
 
-// Save renamed files to disk
-ipcMain.handle('save-files', async (_event, { files, folderPath }) => {
-  let success = 0;
-  let failed = 0;
+function fileInfo(filePath) {
+  const stat = fs.statSync(filePath);
+  const ext = path.extname(filePath).slice(1).toLowerCase();
+  return { name: path.basename(filePath), ext, size: stat.size, mtime: stat.mtimeMs, dir: path.dirname(filePath) };
+}
 
-  for (const file of files) {
-    try {
-      const destPath = path.join(folderPath, file.newName);
-      // Decode base64 → buffer → write
-      const buffer = Buffer.from(file.data, 'base64');
-      fs.writeFileSync(destPath, buffer);
-      success++;
-    } catch (err) {
-      console.error('Failed to save file:', file.newName, err);
-      failed++;
-    }
-  }
+ipcMain.handle('read-folder', async (_event, folderPath) => {
+  try {
+    if (!folderPath || !fs.statSync(folderPath).isDirectory()) return { error: 'Folder does not exist' };
+    return fs.readdirSync(folderPath, { withFileTypes: true })
+      .filter(entry => entry.isFile())
+      .map(entry => fileInfo(path.join(folderPath, entry.name)));
+  } catch (err) { return { error: err.message }; }
+});
 
-  return { success, failed };
+ipcMain.handle('pick-files', async () => {
+  const result = await dialog.showOpenDialog(mainWindow, {
+    properties: ['openFile', 'multiSelections'], title: 'Choose files'
+  });
+  if (result.canceled) return [];
+  return result.filePaths.map(fileInfo);
+});
+
+function safeName(name) {
+  return typeof name === 'string' && name.length > 0 && name !== '.' && name !== '..' && !/[\\/\0]/.test(name);
+}
+
+ipcMain.handle('rename-file', async (_event, { folderPath, oldName, newName }) => {
+  try {
+    if (!safeName(oldName) || !safeName(newName)) return { ok: false, error: 'Invalid filename' };
+    const source = path.join(folderPath, oldName);
+    const target = path.join(folderPath, newName);
+    if (!fs.existsSync(source)) return { ok: false, error: 'Source file not found' };
+    if (source !== target && fs.existsSync(target)) return { ok: false, error: 'A file with that name already exists' };
+    fs.renameSync(source, target);
+    return { ok: true };
+  } catch (err) { return { ok: false, error: err.message }; }
+});
+
+ipcMain.handle('move-file', async (_event, { folderPath, fileName, destFolder }) => {
+  try {
+    if (!safeName(fileName) || !safeName(destFolder)) return { ok: false, error: 'Invalid file or folder name' };
+    const source = path.join(folderPath, fileName);
+    const destinationDir = path.join(folderPath, destFolder);
+    if (!fs.existsSync(source)) return { ok: false, error: 'Source file not found' };
+    fs.mkdirSync(destinationDir, { recursive: true });
+    const target = path.join(destinationDir, fileName);
+    if (fs.existsSync(target)) return { ok: false, error: 'Destination file already exists' };
+    fs.renameSync(source, target);
+    return { ok: true };
+  } catch (err) { return { ok: false, error: err.message }; }
+});
+
+ipcMain.handle('musicbrainz-search', async (_event, query) => {
+  try {
+    const url = `https://musicbrainz.org/ws/2/recording/?query=${encodeURIComponent(query)}&fmt=json&limit=8`;
+    const response = await fetch(url, { headers: { 'User-Agent': 'm72b-file-formatter/1.0 (https://github.com/m72b/m72b-File-Formatter)' } });
+    if (!response.ok) return { ok: false, error: `MusicBrainz returned ${response.status}` };
+    return { ok: true, data: await response.json() };
+  } catch (err) { return { ok: false, error: err.message }; }
 });
 
 // Expose platform string to renderer

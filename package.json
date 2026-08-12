@@ -1,6 +1,7 @@
 {
   "name": "m72b-file-formatter",
   "version": "1.0.1",
+  "author": "m72b",
   "description": "m72b file formatter — rename engine",
   "main": "main.js",
   "scripts": {
@@ -19,10 +20,7 @@
       "target": "nsis",
       "icon": "assets/icon.ico"
     },
-    "mac": {
-      "target": "dmg",
-      "icon": "assets/icon.icns"
-    },
+    "mac": { "target": "dmg" },
     "linux": {
       "target": "AppImage",
       "icon": "assets/icon.png"

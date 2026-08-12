@@ -912,7 +912,6 @@ document.getElementById('pickFilesBtn').addEventListener('click', async () => {
   if (!files || files.length === 0) return;
 
   // Group by their common parent directory (use the first file's dir as folderPath)
-  const path = require ? null : null; // handled in main; files come back as full paths
   // electronAPI.pickFiles returns [{name, dir, ext, size, mtime}, ...]
   const firstDir = files[0].dir;
   folderPath = firstDir;
