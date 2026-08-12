@@ -28,23 +28,6 @@ npm install
 npm start
 ```
 
-## Build the Windows installer
-
-```bash
-npm run make-installer
-```
-
-The script installs dependencies, removes only this project's previous build output, and creates:
-
-```text
-release/m72b-file-formatter-Setup-2.0.0.exe
-```
-
-The setup is a standalone Windows installer. Running a newer setup updates the existing installation and preserves user data. If troubleshooting is needed, launch the installer with:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\run-installer-with-log.ps1 .\release\m72b-file-formatter-Setup-2.0.0.exe
-```
 
 ## Other platforms
 
