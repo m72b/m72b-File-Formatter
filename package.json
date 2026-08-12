@@ -1,10 +1,12 @@
 {
   "name": "m72b-file-formatter",
-  "version": "1.0.1",
-  "description": "m72b file formatter — rename engine",
+  "version": "2.0.0",
+  "author": "m72b",
+  "description": "m72b file formatter - rename engine",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
+    "make-installer": "node scripts/build-installer.js",
     "build-win": "electron-builder --win",
     "build-mac": "electron-builder --mac",
     "build-linux": "electron-builder --linux"
@@ -13,15 +15,22 @@
     "appId": "com.m72b.fileformatter",
     "productName": "m72b file formatter",
     "directories": {
-      "output": "m72b's test build"
+      "output": "release"
     },
     "win": {
       "target": "nsis",
-      "icon": "assets/icon.ico"
+      "icon": "assets/icon.ico",
+      "artifactName": "m72b-file-formatter-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": false,
+      "deleteAppDataOnUninstall": false,
+      "include": "scripts/installer.nsh"
     },
     "mac": {
-      "target": "dmg",
-      "icon": "assets/icon.icns"
+      "target": "dmg"
     },
     "linux": {
       "target": "AppImage",
@@ -35,7 +44,7 @@
     ]
   },
   "devDependencies": {
-    "electron": "^31.0.0",
-    "electron-builder": "^24.0.0"
+    "electron": "^43.4.0",
+    "electron-builder": "^26.15.3"
   }
 }

@@ -1,96 +1,78 @@
-#  m72b File Formatter
+# m72b File Formatter v2
 
-A simple desktop application that automatically organizes files into folders based on their file type.
+An Electron desktop app for batch-renaming files, applying reusable filename templates, looking up music metadata, and organizing files into subfolders.
+
+## Download
+
+Windows users can download the latest `Setup2.0.0.exe` from [GitHub Releases](https://github.com/m72b/m72b-File-Formatter/releases). The installer includes Electron and the complete app; no Node.js or separate dependencies are required.
 
 ## Features
 
-- Organize files with one click
-- Sort images, videos, documents, archives, and more
-- Create folders automatically
-- Fast processing
-- Clean and simple interface
+- Batch rename files with editable live previews.
+- Templates with built-in tokens such as `{TrackNumber}`, `{TrackName}`, `{Artist}`, `{Year}`, `{ext}`, `{original}`, `{UPPER}`, `{lower}`, and `{n}`.
+- Add custom tokens and define fixed values with Token Overrides.
+- Preserve a file's original extension when a new name does not specify one.
+- Optional rule that changes filenames containing `user input` to `user input 2`.
+- Saved presets, date sorting, drag-and-drop support, and inline editing.
+- MusicBrainz lookup for audio filenames.
+- File Organizer with preview mode and match rules such as `*.mp3`.
+- Safe path validation and duplicate-name protection.
+- Automatic in-place upgrades through the Windows installer.
 
-## Supported File Types
+## Run from source
 
-| Category | Extensions |
-|-----------|------------|
-| Images | .png, .jpg, .jpeg, .gif, .webp |
-| Videos | .mp4, .mov, .avi, .mkv |
-| Documents | .pdf, .docx, .txt, .pptx |
-| Archives | .zip, .rar, .7z |
-| Audio | .mp3, .wav, .flac |
+Requirements: Node.js 20 or newer.
 
-## How It Works
+```bash
+npm install
+npm start
+```
 
-Before:
+## Build the Windows installer
 
-Downloads/
-├── cat.png
-├── report.pdf
-├── song.mp3
-├── movie.mp4
+```bash
+npm run make-installer
+```
 
-After:
+The script installs dependencies, removes only this project's previous build output, and creates:
 
-Downloads/
-├── Images/
-│   └── cat.png
-├── Documents/
-│   └── report.pdf
-├── Audio/
-│   └── song.mp3
-└── Videos/
-    └── movie.mp4
+```text
+release/m72b-file-formatter-Setup-2.0.0.exe
+```
 
-## Installation
+The setup is a standalone Windows installer. Running a newer setup updates the existing installation and preserves user data. If troubleshooting is needed, launch the installer with:
 
-Download the latest release from the Releases section.
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\run-installer-with-log.ps1 .\release\m72b-file-formatter-Setup-2.0.0.exe
+```
 
-## Usage
+## Other platforms
 
-1. Launch the application
-2. Select a folder
-3. Click Format
-4. Done!
+```bash
+npm run build-mac
+npm run build-linux
+```
 
-## Planned Features
+## Project structure
 
-- Undo functionality
-- Custom file rules
-- Duplicate file detection
-- Empty folder cleanup
-- Dark mode
-- Drag & drop support
-- File preview
+```text
+main.js                     Electron main process and file operations
+preload.js                  Secure renderer bridge
+index.html                  Application UI and renderer logic
+scripts/build-installer.js  Installer build and cleanup script
+scripts/installer.nsh       Windows upgrade hooks
+scripts/run-installer-with-log.ps1  Installer diagnostics helper
+assets/                     Application icons
+```
 
-## Roadmap
+## Release checklist
 
-### Version 1.0
-- Basic file sorting
-- Folder creation
-- Modern UI
-
-in the feature 
-
-### Version 1.1 
-- Undo feature
-- Custom categories
-- Settings page
-
-### Version 1.2
-- Duplicate finder
-- Recursive folder scanning
-- Performance improvements
-
-### Version 2.0
-- Plugin system
-- Advanced automation rules
-- Scheduled formatting
-
-## Contributing
-
-Contributions, bug reports, and feature suggestions are welcome.
+1. Update the version in `package.json` and `package-lock.json`.
+2. Run `npm install`.
+3. Run `npm run make-installer`.
+4. Test the generated installer on a clean Windows account.
+5. Create a GitHub Release and upload the `.exe` from the build directory.
 
 ## License
 
-MIT License
+MIT
