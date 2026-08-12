@@ -5,7 +5,12 @@ const root = path.resolve(__dirname, '..');
 const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 
 function run(args) {
-  const result = spawnSync(npm, args, { cwd: root, stdio: 'inherit' });
+  const result = spawnSync(npm, args, {
+    cwd: root,
+    stdio: 'inherit',
+    // npm.cmd must be launched through the Windows command shell.
+    shell: process.platform === 'win32',
+  });
   if (result.error) throw result.error;
   if (result.status !== 0) process.exit(result.status || 1);
 }
