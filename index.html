@@ -208,15 +208,18 @@ input.preset-name-inp::placeholder{color:var(--muted);}
 .lookup-result-sub{font-size:9px;color:var(--muted);margin-top:3px;}
 .lookup-modal-file{font-size:9px;color:var(--muted);margin-bottom:10px;padding:7px 10px;background:#0a0a0a;border-radius:6px;border:1px solid #1a1a1a;}
 
-/* ── Organizer overlay panel ─────────────────────────────────────────────── */
-.organizer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;display:none;align-items:stretch;justify-content:flex-end;}
-.organizer-overlay.open{display:flex;}
-.organizer-panel{width:min(680px,92vw);background:#050505;border-left:2px solid var(--border-hl);display:flex;flex-direction:column;overflow:hidden;animation:slideIn .2s ease;}
-@keyframes slideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
+/* ── Tabs: Renamer ⇄ File Organizer (slide transition) ───────────────────── */
+.tabs-viewport{flex:1;overflow:hidden;position:relative;}
+.tabs-track{display:flex;width:200%;height:100%;transition:transform .32s cubic-bezier(.65,0,.35,1);}
+.tabs-track.show-organizer{transform:translateX(-50%);}
+.tab-panel{width:50%;height:100%;overflow:hidden;display:flex;flex-direction:column;flex-shrink:0;}
+
+/* ── Organizer tab ────────────────────────────────────────────────────────── */
+.organizer-panel{width:100%;height:100%;background:#050505;display:flex;flex-direction:column;overflow:hidden;}
 .organizer-header{padding:14px 18px;border-bottom:1px solid #141414;display:flex;align-items:center;gap:10px;flex-shrink:0;}
 .organizer-title{font-family:'Permanent Marker',cursive;font-size:18px;color:var(--accent);flex:1;}
 .organizer-close{background:none;border:1px solid #222;border-radius:6px;color:var(--muted);cursor:pointer;font-size:12px;padding:4px 9px;transition:all .12s;font-family:'DM Mono',monospace;}
-.organizer-close:hover{border-color:var(--danger);color:var(--danger);}
+.organizer-close:hover{border-color:var(--border-hl);color:var(--accent3);}
 .organizer-body{flex:1;overflow-y:auto;padding:18px;}
 .organizer-body::-webkit-scrollbar{width:4px;}
 .organizer-body::-webkit-scrollbar-thumb{background:#1e1e1e;border-radius:2px;}
@@ -225,13 +228,22 @@ input.preset-name-inp::placeholder{color:var(--muted);}
 .org-folder-bar{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
 .org-folder-path{font-size:10px;color:var(--accent);flex:1;background:#080808;border:1px solid #1a1a1a;border-radius:6px;padding:6px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .org-folder-path.empty{color:#333;}
-.org-rules{display:flex;flex-direction:column;gap:6px;}
-.org-rule{background:#080808;border:1px solid #1a1a1a;border-radius:8px;padding:10px 12px;display:grid;grid-template-columns:1fr auto 1fr auto;gap:8px;align-items:center;}
-.org-rule input{background:#060606;border:1.5px solid #1a1a1a;border-radius:5px;color:var(--text);font-family:'DM Mono',monospace;font-size:10px;padding:5px 8px;outline:none;width:100%;transition:border-color .15s;user-select:text;}
-.org-rule input:focus{border-color:var(--border-hl);}
+.org-rules{display:flex;flex-direction:column;gap:8px;}
+.org-rule{background:#080808;border:1px solid #1a1a1a;border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;}
+.org-rule-top{display:flex;align-items:center;gap:8px;}
+.org-rule-type{flex:1;background:#060606;border:1.5px solid #1a1a1a;border-radius:5px;color:var(--accent3);font-family:'DM Mono',monospace;font-size:10px;padding:6px 8px;outline:none;transition:border-color .15s;}
+.org-rule-type:focus{border-color:var(--border-hl);}
+.org-rule-fields{display:flex;flex-wrap:wrap;align-items:center;gap:7px;}
+.org-rule input,.org-rule select{background:#060606;border:1.5px solid #1a1a1a;border-radius:5px;color:var(--text);font-family:'DM Mono',monospace;font-size:10px;padding:5px 8px;outline:none;transition:border-color .15s;user-select:text;}
+.org-rule input:focus,.org-rule select:focus{border-color:var(--border-hl);}
 .org-rule input::placeholder{color:#2a2a2a;}
-.org-rule-arrow{font-size:11px;color:var(--muted);}
-.org-rule-del{background:none;border:none;color:#2a2a2a;cursor:pointer;font-size:12px;padding:3px 5px;border-radius:4px;transition:all .12s;}
+.org-field-match,.org-field-dest{flex:1 1 130px;min-width:100px;width:auto;}
+.org-field-year{width:84px;flex:0 0 auto;}
+.org-field-size{width:66px;flex:0 0 auto;}
+.org-field-unit{flex:0 0 auto;}
+.org-rule-arrow{font-size:11px;color:var(--muted);flex:0 0 auto;}
+.org-rule-hint{font-size:9px;color:var(--muted);line-height:1.5;}
+.org-rule-del{background:none;border:none;color:#2a2a2a;cursor:pointer;font-size:12px;padding:3px 5px;border-radius:4px;transition:all .12s;flex-shrink:0;}
 .org-rule-del:hover{color:var(--danger);background:rgba(255,68,102,.1);}
 .org-add-rule{width:100%;background:#060606;border:1.5px dashed #1e1e1e;border-radius:7px;color:#333;font-family:'DM Mono',monospace;font-size:10px;padding:7px;cursor:pointer;transition:all .15s;letter-spacing:1px;margin-top:4px;}
 .org-add-rule:hover{border-color:var(--border-hl);color:var(--accent);}
@@ -265,6 +277,11 @@ input.preset-name-inp::placeholder{color:var(--muted);}
   </div>
 </header>
 
+<div class="tabs-viewport" id="tabsViewport">
+<div class="tabs-track" id="tabsTrack">
+
+<!-- ── TAB 1: Renamer ───────────────────────────────────────────────────── -->
+<div class="tab-panel tab-renamer">
 <div class="layout">
 
   <!-- LEFT -->
@@ -357,6 +374,49 @@ input.preset-name-inp::placeholder{color:var(--muted);}
     </div>
   </div>
 </div>
+</div>
+<!-- /TAB 1 -->
+
+<!-- ── TAB 2: File Organizer ────────────────────────────────────────────── -->
+<div class="tab-panel tab-organizer">
+  <div class="organizer-panel" id="organizerPanel">
+    <div class="organizer-header">
+      <span class="organizer-title">📁 File Organizer</span>
+      <button class="organizer-close" id="closeOrganizerBtn">← Back to Renamer</button>
+    </div>
+    <div class="organizer-body">
+
+      <div class="org-section">
+        <div class="org-section-title">Source folder</div>
+        <div class="org-folder-bar">
+          <span class="org-folder-path empty" id="orgFolderPath">— no folder selected —</span>
+          <button class="btn btn-sm" id="orgPickFolderBtn">Browse</button>
+        </div>
+      </div>
+
+      <div class="org-section">
+        <div class="org-section-title">Sort rules — move matching files to a subfolder</div>
+        <div class="org-rules" id="orgRules"></div>
+        <button class="org-add-rule" id="orgAddRuleBtn">+ Add rule</button>
+      </div>
+
+      <div class="org-section">
+        <div class="org-section-title">Actions</div>
+        <div class="org-action-row">
+          <button class="btn btn-accent btn-sm" id="orgRunBtn">▶ Run organizer</button>
+          <button class="btn btn-sm" id="orgPreviewBtn">👁 Preview only</button>
+        </div>
+        <div class="org-log" id="orgLog"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<!-- /TAB 2 -->
+
+</div>
+</div>
+<!-- /tabs-track, /tabs-viewport -->
 
 <!-- Help modal -->
 <div class="modal-bg" id="helpModal">
@@ -405,49 +465,13 @@ input.preset-name-inp::placeholder{color:var(--muted);}
       <b style="color:var(--accent3)">2. Build a template</b><br>Enter a format such as <code>{TrackNumber} - {TrackName} - {Artist}.{ext}</code>. Click a token chip to insert it, or add your own token and provide its value under Token Overrides.<br><br>
       <b style="color:var(--accent3)">3. Apply and save</b><br>Apply the format, edit rows directly, then use Save or Save All. Revert removes unsaved changes.<br><br>
       <b style="color:var(--accent3)">4. Filename rule</b><br>The left-panel rule can look for any phrase, such as <code>like</code>, and rename only matching files to your chosen new base name, such as <code>like 2</code>. The extension stays unchanged.<br><br>
-      <b style="color:var(--accent3)">5. Organizer</b><br>Choose a source folder, add rules such as <code>*.mp3</code>, preview, then run the organizer.
+      <b style="color:var(--accent3)">5. Organizer</b><br>Open the <b>File Organizer</b> tab from the header button — the screen slides across. Choose a source folder, then add rules: a <b>filename pattern</b> (e.g. <code>*.mp3</code>), a <b>modified-year range</b> (e.g. 2020–2021, or just "up to 2020"), or a <b>file-size range</b> (e.g. 100MB–2GB, or just "500MB and up") — each pointing to a destination subfolder. Preview first, then run.
     </div><br>
     <button class="btn btn-sm" id="closeDocsBtn">Close</button>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
-
-<!-- ── File Organizer panel ──────────────────────────────────────────────── -->
-<div class="organizer-overlay" id="organizerOverlay">
-  <div class="organizer-panel" id="organizerPanel">
-    <div class="organizer-header">
-      <span class="organizer-title">📁 File Organizer</span>
-      <button class="organizer-close" id="closeOrganizerBtn">✕ Close</button>
-    </div>
-    <div class="organizer-body">
-
-      <div class="org-section">
-        <div class="org-section-title">Source folder</div>
-        <div class="org-folder-bar">
-          <span class="org-folder-path empty" id="orgFolderPath">— no folder selected —</span>
-          <button class="btn btn-sm" id="orgPickFolderBtn">Browse</button>
-        </div>
-      </div>
-
-      <div class="org-section">
-        <div class="org-section-title">Sort rules — match pattern → move to subfolder</div>
-        <div class="org-rules" id="orgRules"></div>
-        <button class="org-add-rule" id="orgAddRuleBtn">+ Add rule</button>
-      </div>
-
-      <div class="org-section">
-        <div class="org-section-title">Actions</div>
-        <div class="org-action-row">
-          <button class="btn btn-accent btn-sm" id="orgRunBtn">▶ Run organizer</button>
-          <button class="btn btn-sm" id="orgPreviewBtn">👁 Preview only</button>
-        </div>
-        <div class="org-log" id="orgLog"></div>
-      </div>
-
-    </div>
-  </div>
-</div>
 
 <script>
 const isElectron = !!window.electronAPI;
@@ -958,16 +982,24 @@ document.getElementById('lookupAllBtn').addEventListener('click', lookupAll);
 document.getElementById('saveAllBtn').addEventListener('click', saveAll);
 document.getElementById('revertAllBtn').addEventListener('click', revertAll);
 
-document.getElementById('openOrganizerBtn').addEventListener('click', () => {
-  document.getElementById('organizerOverlay').classList.add('open');
+const tabsTrack       = document.getElementById('tabsTrack');
+const openOrganizerBtn = document.getElementById('openOrganizerBtn');
+const ORGANIZER_BTN_LABEL = '📁 File Organizer';
+const RENAMER_BTN_LABEL   = '← Renamer';
+
+function showOrganizerTab() {
+  tabsTrack.classList.add('show-organizer');
+  openOrganizerBtn.textContent = RENAMER_BTN_LABEL;
+}
+function showRenamerTab() {
+  tabsTrack.classList.remove('show-organizer');
+  openOrganizerBtn.textContent = ORGANIZER_BTN_LABEL;
+}
+openOrganizerBtn.addEventListener('click', () => {
+  if (tabsTrack.classList.contains('show-organizer')) showRenamerTab();
+  else showOrganizerTab();
 });
-document.getElementById('closeOrganizerBtn').addEventListener('click', () => {
-  document.getElementById('organizerOverlay').classList.remove('open');
-});
-document.getElementById('organizerOverlay').addEventListener('click', e => {
-  if (e.target === document.getElementById('organizerOverlay'))
-    document.getElementById('organizerOverlay').classList.remove('open');
-});
+document.getElementById('closeOrganizerBtn').addEventListener('click', showRenamerTab);
 
 document.getElementById('pickFilesBtn').addEventListener('click', async () => {
   if (!isElectron) { showToast('File picker requires the desktop app', 'error'); return; }
@@ -993,7 +1025,14 @@ document.getElementById('pickFilesBtn').addEventListener('click', async () => {
 });
 
 let orgFolderPath = null;
-let orgRules = [{ match: '', dest: '' }];
+let orgRules = [{ type: 'pattern', match: '', dest: '' }];
+
+const ORG_RULE_TYPES = [
+  { value: 'pattern', label: 'Filename pattern' },
+  { value: 'date',    label: 'Modified year'    },
+  { value: 'size',    label: 'File size'        },
+];
+const ORG_SIZE_UNITS = ['KB', 'MB', 'GB'];
 
 function renderOrgRules() {
   const container = document.getElementById('orgRules');
@@ -1002,15 +1041,62 @@ function renderOrgRules() {
     container.innerHTML = '<div class="org-empty">No rules yet — add one below.</div>'; return;
   }
   orgRules.forEach((rule, i) => {
+    if (!rule.type) rule.type = 'pattern'; // back-compat with older saved rules
+
     const row = document.createElement('div');
     row.className = 'org-rule';
+
+    const typeOptions = ORG_RULE_TYPES
+      .map(t => `<option value="${t.value}"${rule.type === t.value ? ' selected' : ''}>${t.label}</option>`)
+      .join('');
+
+    let fieldsHtml = '';
+    let hintHtml = '';
+
+    if (rule.type === 'date') {
+      fieldsHtml = `
+        <input type="number" class="org-field-year" placeholder="From year" value="${esc(rule.dateFrom || '')}" data-idx="${i}" data-field="dateFrom">
+        <span class="org-rule-arrow">–</span>
+        <input type="number" class="org-field-year" placeholder="To year" value="${esc(rule.dateTo || '')}" data-idx="${i}" data-field="dateTo">
+        <span class="org-rule-arrow">→</span>
+        <input type="text" class="org-field-dest" placeholder="subfolder name" value="${esc(rule.dest || '')}" data-idx="${i}" data-field="dest">`;
+      hintHtml = `<div class="org-rule-hint">Uses each file's last-modified year. Leave "From" blank to mean "up to that year"; leave "To" blank to mean "that year onward". e.g. To=2020 only → 2020 and earlier.</div>`;
+    } else if (rule.type === 'size') {
+      const unitOptions = (selected) => ORG_SIZE_UNITS
+        .map(u => `<option value="${u}"${selected === u ? ' selected' : ''}>${u}</option>`).join('');
+      fieldsHtml = `
+        <input type="number" step="any" min="0" class="org-field-size" placeholder="Min" value="${esc(rule.sizeMin || '')}" data-idx="${i}" data-field="sizeMin">
+        <select class="org-field-unit" data-idx="${i}" data-field="sizeMinUnit">${unitOptions(rule.sizeMinUnit || 'MB')}</select>
+        <span class="org-rule-arrow">–</span>
+        <input type="number" step="any" min="0" class="org-field-size" placeholder="Max" value="${esc(rule.sizeMax || '')}" data-idx="${i}" data-field="sizeMax">
+        <select class="org-field-unit" data-idx="${i}" data-field="sizeMaxUnit">${unitOptions(rule.sizeMaxUnit || 'MB')}</select>
+        <span class="org-rule-arrow">→</span>
+        <input type="text" class="org-field-dest" placeholder="subfolder name" value="${esc(rule.dest || '')}" data-idx="${i}" data-field="dest">`;
+      hintHtml = `<div class="org-rule-hint">Leave "Min" blank for no lower bound, "Max" blank for no upper bound. e.g. Min=100 MB only → 100MB and larger.</div>`;
+    } else {
+      fieldsHtml = `
+        <input type="text" class="org-field-match" placeholder="*.mp3  or  artist name" value="${esc(rule.match || '')}" data-idx="${i}" data-field="match">
+        <span class="org-rule-arrow">→</span>
+        <input type="text" class="org-field-dest" placeholder="subfolder name" value="${esc(rule.dest || '')}" data-idx="${i}" data-field="dest">`;
+    }
+
     row.innerHTML = `
-      <input type="text" placeholder="*.mp3  or  artist name" value="${esc(rule.match)}" data-idx="${i}" data-field="match">
-      <span class="org-rule-arrow">→</span>
-      <input type="text" placeholder="subfolder name" value="${esc(rule.dest)}" data-idx="${i}" data-field="dest">
-      <button class="org-rule-del" data-idx="${i}">✕</button>`;
-    row.querySelectorAll('input').forEach(inp => {
+      <div class="org-rule-top">
+        <select class="org-rule-type" data-idx="${i}">${typeOptions}</select>
+        <button class="org-rule-del" data-idx="${i}">✕</button>
+      </div>
+      <div class="org-rule-fields">${fieldsHtml}</div>
+      ${hintHtml}`;
+
+    row.querySelector('.org-rule-type').addEventListener('change', e => {
+      orgRules[i].type = e.target.value;
+      renderOrgRules();
+    });
+    row.querySelectorAll('.org-rule-fields input').forEach(inp => {
       inp.addEventListener('input', () => { orgRules[+inp.dataset.idx][inp.dataset.field] = inp.value; });
+    });
+    row.querySelectorAll('.org-rule-fields select').forEach(sel => {
+      sel.addEventListener('change', () => { orgRules[+sel.dataset.idx][sel.dataset.field] = sel.value; });
     });
     row.querySelector('.org-rule-del').addEventListener('click', () => {
       orgRules.splice(i, 1); renderOrgRules();
@@ -1020,7 +1106,7 @@ function renderOrgRules() {
 }
 
 document.getElementById('orgAddRuleBtn').addEventListener('click', () => {
-  orgRules.push({ match: '', dest: '' }); renderOrgRules();
+  orgRules.push({ type: 'pattern', match: '', dest: '' }); renderOrgRules();
 });
 
 document.getElementById('orgPickFolderBtn').addEventListener('click', async () => {
@@ -1032,11 +1118,80 @@ document.getElementById('orgPickFolderBtn').addEventListener('click', async () =
   el.textContent = p; el.classList.remove('empty');
 });
 
+function ruleHasCriteria(rule) {
+  const type = rule.type || 'pattern';
+  if (type === 'date') return !!(String(rule.dateFrom || '').trim() || String(rule.dateTo || '').trim());
+  if (type === 'size') return !!(String(rule.sizeMin || '').trim() || String(rule.sizeMax || '').trim());
+  return !!String(rule.match || '').trim();
+}
+
+function sizeToBytes(value, unit) {
+  const n = parseFloat(value);
+  if (!isFinite(n)) return null;
+  const mult = { KB: 1024, MB: 1024 ** 2, GB: 1024 ** 3 }[unit] || 1024 ** 2;
+  return n * mult;
+}
+
+function ruleMatches(rule, file) {
+  const type = rule.type || 'pattern';
+
+  if (type === 'date') {
+    const from = String(rule.dateFrom || '').trim();
+    const to   = String(rule.dateTo   || '').trim();
+    if (!from && !to) return false;
+    const year = new Date(file.mtime).getFullYear();
+    if (from && year < parseInt(from, 10)) return false;
+    if (to   && year > parseInt(to, 10))   return false;
+    return true;
+  }
+
+  if (type === 'size') {
+    const minRaw = String(rule.sizeMin || '').trim();
+    const maxRaw = String(rule.sizeMax || '').trim();
+    if (!minRaw && !maxRaw) return false;
+    const minBytes = minRaw ? sizeToBytes(minRaw, rule.sizeMinUnit || 'MB') : null;
+    const maxBytes = maxRaw ? sizeToBytes(maxRaw, rule.sizeMaxUnit || 'MB') : null;
+    if (minBytes !== null && file.size < minBytes) return false;
+    if (maxBytes !== null && file.size > maxBytes) return false;
+    return true;
+  }
+
+  const pattern = String(rule.match || '').trim();
+  if (!pattern) return false;
+  if (pattern.startsWith('*.')) {
+    const ext = pattern.slice(2).toLowerCase();
+    return file.ext.toLowerCase() === ext;
+  }
+  return file.name.toLowerCase().includes(pattern.toLowerCase());
+}
+
+function ruleLabel(rule) {
+  const type = rule.type || 'pattern';
+  if (type === 'date') {
+    const from = String(rule.dateFrom || '').trim();
+    const to   = String(rule.dateTo   || '').trim();
+    if (from && to) return `${from}–${to}`;
+    if (to)   return `up to ${to}`;
+    if (from) return `${from} onward`;
+    return 'year range';
+  }
+  if (type === 'size') {
+    const min = String(rule.sizeMin || '').trim();
+    const max = String(rule.sizeMax || '').trim();
+    const fmt = (v, u) => `${v}${u || 'MB'}`;
+    if (min && max) return `${fmt(min, rule.sizeMinUnit)}–${fmt(max, rule.sizeMaxUnit)}`;
+    if (max) return `under ${fmt(max, rule.sizeMaxUnit)}`;
+    if (min) return `${fmt(min, rule.sizeMinUnit)}+`;
+    return 'size range';
+  }
+  return rule.match || '';
+}
+
 async function runOrganizer(dryRun) {
   const log = document.getElementById('orgLog');
   if (!isElectron) { log.innerHTML = '<span class="org-log-err">Requires the desktop app.</span>'; return; }
   if (!orgFolderPath) { showToast('Pick a source folder first', 'error'); return; }
-  const activeRules = orgRules.filter(r => r.match.trim() && r.dest.trim());
+  const activeRules = orgRules.filter(r => ruleHasCriteria(r) && String(r.dest || '').trim());
   if (activeRules.length === 0) { showToast('Add at least one rule', 'error'); return; }
 
   log.innerHTML = dryRun ? '<span style="color:var(--warn)">— Preview mode — no files will be moved —</span><br>' : '';
@@ -1047,19 +1202,11 @@ async function runOrganizer(dryRun) {
   let moved = 0;
   for (const file of result) {
     for (const rule of activeRules) {
-      const pattern = rule.match.trim();
-      let matches = false;
-      if (pattern.startsWith('*.')) {
-        const ext = pattern.slice(2).toLowerCase();
-        matches = file.ext.toLowerCase() === ext;
-      } else {
-        matches = file.name.toLowerCase().includes(pattern.toLowerCase());
-      }
-      if (!matches) continue;
+      if (!ruleMatches(rule, file)) continue;
 
       const destFolder = rule.dest.trim();
       if (dryRun) {
-        log.innerHTML += `<span class="org-log-ok">→ ${esc(file.name)}</span> <span style="color:#444">to</span> <span style="color:var(--accent)">${esc(destFolder)}/</span><br>`;
+        log.innerHTML += `<span class="org-log-ok">→ ${esc(file.name)}</span> <span style="color:#444">(${esc(ruleLabel(rule))}) to</span> <span style="color:var(--accent)">${esc(destFolder)}/</span><br>`;
         moved++;
       } else {
         const res = await window.electronAPI.moveFile({ folderPath: orgFolderPath, fileName: file.name, destFolder });
