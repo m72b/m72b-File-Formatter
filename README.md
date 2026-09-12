@@ -33,34 +33,6 @@ npm install
 npm start
 ```
 
-## Build the Windows installer
-
-```bash
-npm run make-installer
-```
-
-This installs dependencies, removes only this project's previous build output, and creates:
-
-```text
-release/m72b-file-formatter-Setup-<version>.exe
-```
-
-The setup is a standalone Windows installer. Running a newer setup updates the existing installation and preserves user data.
-
-If `scripts/build-installer.js` isn't present in your checkout, build directly with electron-builder instead:
-
-```bash
-npm run build-win
-```
-
-## Other platforms
-
-```bash
-npm run build-mac
-npm run build-linux
-```
-
-
 
 ## Project structure
 
@@ -68,8 +40,6 @@ npm run build-linux
 main.js                     Electron main process and file operations
 preload.js                  Secure renderer bridge
 index.html                  Application UI, tabs, and renderer logic
-scripts/build-installer.js  Installer build and cleanup script (if present)
-scripts/installer.nsh       Windows upgrade hooks (if present)
 assets/                     Application icons
 ```
 
