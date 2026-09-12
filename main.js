@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, shell, screen } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -33,6 +33,16 @@ function createWindow() {
     shell.openExternal(url);
     return { action: 'deny' };
   });
+
+  // Windows-only fix: frameless (frame:false) windows can be handed maximized
+  // bounds that overshoot the real work area, leaving a strip of the screen
+  // blank. Snap to the correct work area whenever the window is maximized.
+  if (process.platform === 'win32') {
+    mainWindow.on('maximize', () => {
+      const display = screen.getDisplayMatching(mainWindow.getBounds());
+      mainWindow.setBounds(display.workArea);
+    });
+  }
 }
 
 app.whenReady().then(() => {
@@ -124,6 +134,34 @@ ipcMain.handle('musicbrainz-search', async (_event, query) => {
     if (!response.ok) return { ok: false, error: `MusicBrainz returned ${response.status}` };
     return { ok: true, data: await response.json() };
   } catch (err) { return { ok: false, error: err.message }; }
+});
+
+const BG_IMAGE_MIME = { png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif', webp: 'image/webp', bmp: 'image/bmp' };
+const BG_IMAGE_MAX_BYTES = 8 * 1024 * 1024; // 8MB cap before we ever read the file into memory
+
+ipcMain.handle('pick-background-image', async () => {
+  try {
+    const result = await dialog.showOpenDialog(mainWindow, {
+      title: 'Choose a background image',
+      properties: ['openFile'],
+      filters: [{ name: 'Images', extensions: Object.keys(BG_IMAGE_MIME) }],
+    });
+    if (result.canceled || result.filePaths.length === 0) return null;
+
+    const filePath = result.filePaths[0];
+    const ext = path.extname(filePath).slice(1).toLowerCase();
+    const mime = BG_IMAGE_MIME[ext];
+    if (!mime) return { ok: false, error: 'Unsupported image type' };
+
+    const stat = fs.statSync(filePath);
+    if (!stat.isFile()) return { ok: false, error: 'Not a file' };
+    if (stat.size > BG_IMAGE_MAX_BYTES) return { ok: false, error: 'Image is larger than 8MB — pick a smaller file' };
+
+    const data = fs.readFileSync(filePath);
+    return { ok: true, dataUrl: `data:${mime};base64,${data.toString('base64')}`, name: path.basename(filePath) };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
 });
 
 ipcMain.handle('get-platform', () => process.platform);
