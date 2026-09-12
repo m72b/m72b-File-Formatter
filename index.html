@@ -2,20 +2,24 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' file: https://fonts.googleapis.com https://fonts.gstatic.com https://musicbrainz.org; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com file: data:; script-src 'self' 'unsafe-inline'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file: https://fonts.googleapis.com https://fonts.gstatic.com https://musicbrainz.org; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com file: data:; img-src 'self' data:; script-src 'self' 'unsafe-inline'">
 <title>m72b — File Formatter</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Permanent+Marker&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Rajdhani:wght@500;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg:#000; --surface:#080808; --surface2:#101010;
   --border:#1e1e1e; --border-hl:#3d1260;
   --accent:#7b2fff; --accent2:#4a0099; --accent3:#d4c8ff;
+  --accent-cy:#2fe4ff;
   --text:#e8e8e8; --muted:#555; --danger:#ff4466;
   --ok:#22c97a; --warn:#f5a623;
   --radius:10px;
+  --cut-lg:16px; --cut-md:9px; --cut-sm:4px;
+  --bg-opacity:0.16; --bg-tint:#7b2fff; --bg-size:12px;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh;overflow:hidden;display:flex;flex-direction:column;user-select:none;}
+html{height:100%;}
+body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;height:100vh;overflow:hidden;display:flex;flex-direction:column;user-select:none;}
 
 /* titlebar */
 .titlebar{height:32px;background:#000;border-bottom:1px solid #111;display:none;align-items:center;padding:0 12px;-webkit-app-region:drag;flex-shrink:0;}
@@ -27,10 +31,6 @@ body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-
 
 /* header */
 header{padding:14px 28px;border-bottom:1px solid #111;background:#000;box-shadow:0 1px 0 var(--border-hl);flex-shrink:0;display:flex;align-items:center;gap:14px;-webkit-app-region:drag;position:relative;overflow:hidden;}
-header::after{content:'M72B';position:absolute;right:-10px;top:-22px;font-family:'Permanent Marker',cursive;font-size:100px;color:rgba(60,10,100,0.08);pointer-events:none;letter-spacing:-4px;}
-.logo{font-family:'Permanent Marker',cursive;font-size:24px;text-shadow:3px 3px 0 #2a2a2a;-webkit-app-region:no-drag;}
-.logo span{color:var(--accent);text-shadow:3px 3px 0 #1a0033,0 0 18px rgba(123,47,255,.5);}
-.logo-badge{font-size:9px;background:var(--accent);color:#000;padding:2px 6px;border-radius:4px;letter-spacing:1px;margin-left:4px;vertical-align:middle;}
 .tagline{font-size:9px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;}
 .header-spacer{flex:1;}
 .header-actions{display:flex;gap:8px;-webkit-app-region:no-drag;align-items:center;}
@@ -38,11 +38,11 @@ header::after{content:'M72B';position:absolute;right:-10px;top:-22px;font-family
 .nav-btn:hover{border-color:var(--border-hl);color:var(--accent3);}
 
 /* layout */
-.layout{display:grid;grid-template-columns:300px 1fr;flex:1;overflow:hidden;border-left:2px solid var(--border-hl);border-right:2px solid var(--border-hl);border-bottom:2px solid var(--border-hl);}
+.layout{display:grid;grid-template-columns:300px 1fr;flex:1;overflow:hidden;min-height:0;border-left:2px solid var(--border-hl);border-right:2px solid var(--border-hl);border-bottom:2px solid var(--border-hl);}
 
 /* left panel */
-.left-panel{border-right:1px solid #181818;display:flex;flex-direction:column;overflow:hidden;}
-.left-scroll{flex:1;overflow-y:auto;}
+.left-panel{border-right:1px solid #181818;display:flex;flex-direction:column;overflow:hidden;min-height:0;}
+.left-scroll{flex:1;overflow-y:auto;min-height:0;}
 .left-scroll::-webkit-scrollbar{width:4px;}
 .left-scroll::-webkit-scrollbar-thumb{background:#1e1e1e;border-radius:2px;}
 .panel-section{padding:16px 18px;border-bottom:1px solid #141414;}
@@ -97,7 +97,7 @@ input.preset-name-inp::placeholder{color:var(--muted);}
 .empty-presets{color:var(--muted);font-size:10px;text-align:center;padding:16px 0;line-height:1.8;}
 
 /* buttons */
-.btn{background:transparent;border:1.5px solid #252525;border-radius:var(--radius);color:var(--text);font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;padding:6px 13px;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.btn{background:transparent;border:1.5px solid #252525;border-radius:var(--radius);color:var(--text);font-family:'Rajdhani',sans-serif;font-weight:600;font-size:14px;letter-spacing:1px;text-transform:uppercase;padding:6px 13px;cursor:pointer;transition:all .15s;white-space:nowrap;}
 .btn:hover{border-color:#3a3a3a;background:#0d0d0d;}
 .btn-accent{background:var(--accent);border-color:var(--accent);color:#000;}
 .btn-accent:hover{background:#6a22ee;border-color:#6a22ee;}
@@ -109,7 +109,7 @@ input.preset-name-inp::placeholder{color:var(--muted);}
 .btn:disabled{opacity:.35;cursor:not-allowed;}
 
 /* right panel */
-.right-panel{display:flex;flex-direction:column;overflow:hidden;background:#000;}
+.right-panel{display:flex;flex-direction:column;overflow:hidden;background:#000;min-height:0;}
 
 /* folder bar */
 .folder-bar{margin:16px 22px 0;background:#050505;border:1px solid #1a1a1a;border-left:2px solid var(--border-hl);border-radius:var(--radius);padding:8px 13px;display:flex;align-items:center;gap:10px;flex-shrink:0;}
@@ -124,7 +124,7 @@ input.preset-name-inp::placeholder{color:var(--muted);}
 .preview-value{font-size:10px;color:var(--accent);flex:1;}
 
 /* files section */
-.files-section{flex:1;overflow:hidden;padding:8px 22px 18px;display:flex;flex-direction:column;gap:8px;}
+.files-section{flex:1;overflow:hidden;padding:8px 22px 18px;display:flex;flex-direction:column;gap:8px;min-height:0;}
 .files-header{display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
 .files-count{font-size:9px;color:var(--muted);}
 .files-actions{display:flex;gap:6px;align-items:center;}
@@ -138,9 +138,9 @@ input.preset-name-inp::placeholder{color:var(--muted);}
 .sort-label input:checked~.sort-text{color:var(--accent3);}
 
 /* file table */
-.file-table{background:#040404;border-radius:10px;border:1px solid #181818;outline:1px solid var(--border-hl);overflow:hidden;flex:1;display:flex;flex-direction:column;}
+.file-table{background:#040404;border-radius:10px;border:1px solid #181818;outline:1px solid var(--border-hl);overflow:hidden;flex:1;display:flex;flex-direction:column;min-height:0;}
 .file-row-header{display:grid;gap:10px;align-items:center;padding:7px 12px;background:#080808;font-size:8px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;border-bottom:1px solid #181818;flex-shrink:0;}
-.file-list-scroll{overflow-y:auto;flex:1;}
+.file-list-scroll{overflow-y:auto;flex:1;min-height:0;}
 .file-list-scroll::-webkit-scrollbar{width:4px;}
 .file-list-scroll::-webkit-scrollbar-thumb{background:#1a1a1a;border-radius:2px;}
 
@@ -194,7 +194,7 @@ input.preset-name-inp::placeholder{color:var(--muted);}
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:200;align-items:center;justify-content:center;}
 .modal-bg.open{display:flex;}
 .modal-box{background:#050505;border:1px solid #1e1e1e;outline:1.5px solid var(--border-hl);border-radius:14px;padding:22px;max-width:500px;width:90%;}
-.modal-title{font-family:'Permanent Marker',cursive;font-size:18px;color:var(--accent);margin-bottom:14px;}
+.modal-title{font-family:'Orbitron',sans-serif;font-weight:800;font-size:16px;letter-spacing:1px;text-transform:uppercase;color:var(--accent);margin-bottom:14px;}
 .token-table{width:100%;border-collapse:collapse;}
 .token-table td{padding:6px 7px;border-bottom:1px solid #111;font-size:11px;}
 .token-table td:first-child{color:var(--accent);width:38%;}
@@ -209,18 +209,18 @@ input.preset-name-inp::placeholder{color:var(--muted);}
 .lookup-modal-file{font-size:9px;color:var(--muted);margin-bottom:10px;padding:7px 10px;background:#0a0a0a;border-radius:6px;border:1px solid #1a1a1a;}
 
 /* ── Tabs: Renamer ⇄ File Organizer (slide transition) ───────────────────── */
-.tabs-viewport{flex:1;overflow:hidden;position:relative;}
+.tabs-viewport{flex:1;overflow:hidden;position:relative;min-height:0;}
 .tabs-track{display:flex;width:200%;height:100%;transition:transform .32s cubic-bezier(.65,0,.35,1);}
 .tabs-track.show-organizer{transform:translateX(-50%);}
-.tab-panel{width:50%;height:100%;overflow:hidden;display:flex;flex-direction:column;flex-shrink:0;}
+.tab-panel{width:50%;height:100%;overflow:hidden;display:flex;flex-direction:column;flex-shrink:0;min-height:0;}
 
 /* ── Organizer tab ────────────────────────────────────────────────────────── */
 .organizer-panel{width:100%;height:100%;background:#050505;display:flex;flex-direction:column;overflow:hidden;}
 .organizer-header{padding:14px 18px;border-bottom:1px solid #141414;display:flex;align-items:center;gap:10px;flex-shrink:0;}
-.organizer-title{font-family:'Permanent Marker',cursive;font-size:18px;color:var(--accent);flex:1;}
+.organizer-title{font-family:'Orbitron',sans-serif;font-weight:800;font-size:16px;letter-spacing:1px;text-transform:uppercase;color:var(--accent);flex:1;}
 .organizer-close{background:none;border:1px solid #222;border-radius:6px;color:var(--muted);cursor:pointer;font-size:12px;padding:4px 9px;transition:all .12s;font-family:'DM Mono',monospace;}
 .organizer-close:hover{border-color:var(--border-hl);color:var(--accent3);}
-.organizer-body{flex:1;overflow-y:auto;padding:18px;}
+.organizer-body{flex:1;overflow-y:auto;padding:18px;min-height:0;}
 .organizer-body::-webkit-scrollbar{width:4px;}
 .organizer-body::-webkit-scrollbar-thumb{background:#1e1e1e;border-radius:2px;}
 .org-section{margin-bottom:22px;}
@@ -253,12 +253,115 @@ input.preset-name-inp::placeholder{color:var(--muted);}
 .org-log-ok{color:var(--ok);}
 .org-log-err{color:var(--danger);}
 .org-empty{color:#222;font-size:10px;text-align:center;padding:20px 0;}
+
+/* ============================================================
+   VECTORHEART OVERHAUL — angular chrome + customizable backdrop
+   ============================================================ */
+
+/* keep real app chrome above the fixed backdrop layer */
+.titlebar, .tabs-viewport { position:relative; z-index:1; }
+header { z-index:1; background:rgba(0,0,0,.82); backdrop-filter:blur(2px); border-bottom:none; box-shadow:none; }
+.right-panel{ background:rgba(0,0,0,.86); }
+
+.header-stripe{
+  position:absolute; left:0; right:0; bottom:0; height:3px; pointer-events:none;
+  background:repeating-linear-gradient(115deg, var(--accent) 0 10px, var(--accent-cy) 10px 13px, transparent 13px 22px);
+}
+
+/* ---- customizable backdrop layer (behind everything) ---- */
+#bgLayer{
+  position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden;
+  opacity:var(--bg-opacity); transition:opacity .25s ease;
+  background-repeat:no-repeat; background-position:center; background-size:cover;
+}
+.bg-tile-wrap{position:absolute;inset:-15%;display:flex;flex-wrap:wrap;align-content:flex-start;gap:26px;transform:rotate(-5deg) scale(1.1);transform-origin:center;}
+.bg-ascii{font-family:'DM Mono',monospace;white-space:pre;line-height:1.15;margin:0;color:var(--bg-tint);font-size:var(--bg-size);}
+.bg-text-wrap{position:absolute;inset:-25%;display:flex;flex-wrap:wrap;align-content:flex-start;gap:34px;transform:rotate(-8deg);transform-origin:center;}
+.bg-text-wrap span{font-family:'Orbitron',sans-serif;font-weight:900;white-space:nowrap;letter-spacing:2px;color:var(--bg-tint);font-size:var(--bg-size);}
+
+/* ---- angular clip-path treatment: large containers ---- */
+.panel-section, .token-section, .folder-bar, .preview-bar, .bulk-bar,
+.file-table, .modal-box, .org-rule, .settings-panel, .lookup-modal-file{
+  clip-path: polygon(var(--cut-lg) 0, 100% 0, 100% calc(100% - var(--cut-lg)), calc(100% - var(--cut-lg)) 100%, 0 100%, 0 var(--cut-lg));
+  position:relative;
+}
+
+/* ---- angular clip-path treatment: buttons, fields, mid controls ---- */
+.btn, .nav-btn, .row-action-btn, .chip, .preset-item, .lookup-result-item,
+.add-token-input, .add-override-btn, .org-add-rule, textarea.format-input,
+.override-token-name, .override-value, input.preset-name-inp,
+.filename-rule-grid input, .org-rule input, .org-rule select, .org-rule-type,
+.org-folder-path, .sort-label, .toast, .settings-input, .bg-ascii-input,
+.settings-mode-btn, .organizer-close{
+  clip-path: polygon(var(--cut-md) 0, 100% 0, 100% calc(100% - var(--cut-md)), calc(100% - var(--cut-md)) 100%, 0 100%, 0 var(--cut-md));
+}
+
+/* ---- angular clip-path treatment: tiny badges/pills ---- */
+.status-pill{
+  border-radius:0;
+  clip-path: polygon(var(--cut-sm) 0, 100% 0, 100% calc(100% - var(--cut-sm)), calc(100% - var(--cut-sm)) 100%, 0 100%, 0 var(--cut-sm));
+}
+
+/* ---- HUD corner brackets on the two corners the clip-path leaves square ---- */
+.panel-section::before, .token-section::before, .folder-bar::before, .file-table::before,
+.modal-box::before, .org-rule::before, .settings-panel::before,
+.panel-section::after, .token-section::after, .folder-bar::after, .file-table::after,
+.modal-box::after, .org-rule::after, .settings-panel::after{
+  content:''; position:absolute; width:9px; height:9px; pointer-events:none; opacity:.85;
+}
+.panel-section::before, .token-section::before, .folder-bar::before, .file-table::before,
+.modal-box::before, .org-rule::before, .settings-panel::before{
+  top:-1px; right:-1px; border-top:2px solid var(--accent-cy); border-right:2px solid var(--accent-cy);
+}
+.panel-section::after, .token-section::after, .folder-bar::after, .file-table::after,
+.modal-box::after, .org-rule::after, .settings-panel::after{
+  bottom:-1px; left:-1px; border-bottom:2px solid var(--accent-cy); border-left:2px solid var(--accent-cy);
+}
+
+/* ---- settings gear button ---- */
+.settings-btn{display:flex;align-items:center;justify-content:center;padding:5px 9px;color:var(--muted);}
+.settings-btn:hover{color:var(--accent-cy);border-color:var(--accent-cy);}
+.settings-btn svg{display:block;}
+
+/* ---- settings panel (small popover, opened from the header gear) ---- */
+.settings-panel{
+  position:fixed; top:52px; right:26px; width:290px; max-height:calc(100vh - 70px); overflow-y:auto;
+  background:var(--surface); border:1px solid var(--border-hl); padding:16px 16px 14px; z-index:60;
+  display:none; box-shadow:0 14px 34px rgba(0,0,0,.6);
+}
+.settings-panel::-webkit-scrollbar{width:4px;}
+.settings-panel::-webkit-scrollbar-thumb{background:#1e1e1e;border-radius:2px;}
+.settings-panel.open{display:block;}
+.settings-panel-title{font-family:'Orbitron',sans-serif;font-weight:800;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--accent3);margin-bottom:12px;}
+.settings-modes{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:14px;}
+.settings-mode-btn{background:#060606;border:1.5px solid #1a1a1a;color:var(--muted);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.5px;padding:7px 2px;cursor:pointer;transition:all .15s;text-transform:uppercase;}
+.settings-mode-btn:hover{border-color:#333;color:var(--text);}
+.settings-mode-btn.active{border-color:var(--accent);color:var(--accent3);background:rgba(123,47,255,.14);}
+.settings-block{margin-bottom:13px;}
+.settings-block[hidden]{display:none;}
+.settings-label{display:block;font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
+.settings-input{width:100%;background:#060606;border:1.5px solid #1e1e1e;color:var(--text);font-family:'DM Mono',monospace;font-size:11px;padding:7px 9px;outline:none;transition:border-color .15s;user-select:text;}
+.settings-input:focus{border-color:var(--border-hl);}
+.bg-ascii-input{width:100%;background:#060606;border:1.5px solid #1e1e1e;color:var(--text);font-family:'DM Mono',monospace;font-size:10px;line-height:1.4;padding:8px 9px;outline:none;resize:vertical;min-height:90px;transition:border-color .15s;user-select:text;}
+.bg-ascii-input:focus{border-color:var(--border-hl);}
+.settings-range{width:100%;accent-color:var(--accent);}
+.settings-range-row{display:flex;align-items:center;gap:8px;}
+.settings-range-val{font-size:9px;color:var(--accent3);width:34px;text-align:right;flex-shrink:0;}
+.bg-image-row{display:flex;align-items:center;gap:8px;}
+.bg-image-name{font-size:9px;color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.settings-check{display:flex;align-items:center;gap:7px;font-size:10px;color:var(--accent3);cursor:pointer;user-select:none;margin-top:9px;}
+.settings-actions{display:flex;gap:8px;margin-top:4px;}
+.settings-actions .btn{flex:1;}
+input[type=color].settings-color{width:36px;height:27px;padding:0;border:1.5px solid #1e1e1e;background:#060606;cursor:pointer;}
+input[type=checkbox]{accent-color:var(--accent);}
 </style>
 </head>
 <body>
 
+<div id="bgLayer"></div>
+
 <div class="titlebar" id="titlebar">
-  <span class="titlebar-title">M72B FILE FORMATTER V2</span>
+  <span class="titlebar-title"></span>
   <div class="titlebar-btns">
     <button class="tb-btn" id="tbMin">─</button>
     <button class="tb-btn" id="tbMax">□</button>
@@ -267,15 +370,77 @@ input.preset-name-inp::placeholder{color:var(--muted);}
 </div>
 
 <header>
-  <div class="logo">m72b <span>formatter</span> <span class="logo-badge">V2</span></div>
   <div class="tagline">Edit Engine</div>
   <div class="header-spacer"></div>
   <div class="header-actions">
     <button class="nav-btn" id="openOrganizerBtn">📁 File Organizer</button>
     <button class="nav-btn" id="openDocsBtn">Documentation</button>
     <a href="#" id="helpLink" style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);text-decoration:none;letter-spacing:1px;">tokens ?</a>
+    <button class="nav-btn settings-btn" id="settingsBtn" type="button" title="Background settings" aria-haspopup="true" aria-expanded="false">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 2l8 4.6v10.8L12 22l-8-4.6V6.6L12 2z"/><circle cx="12" cy="12" r="3.2"/></svg>
+    </button>
   </div>
+  <div class="header-stripe"></div>
 </header>
+
+<div class="settings-panel" id="settingsPanel" role="dialog" aria-label="Background settings">
+  <div class="settings-panel-title">Background</div>
+
+  <div class="settings-modes" id="bgModeRow">
+    <button class="settings-mode-btn" type="button" data-mode="none">None</button>
+    <button class="settings-mode-btn" type="button" data-mode="ascii">ASCII</button>
+    <button class="settings-mode-btn" type="button" data-mode="text">Text</button>
+    <button class="settings-mode-btn" type="button" data-mode="image">Image</button>
+  </div>
+
+  <div class="settings-block" id="bgAsciiBlock" hidden>
+    <label class="settings-label" for="bgAsciiInput">Paste ASCII art</label>
+    <textarea class="bg-ascii-input" id="bgAsciiInput" spellcheck="false" placeholder="Paste any ASCII art here — it tiles across the app background"></textarea>
+  </div>
+
+  <div class="settings-block" id="bgTextBlock" hidden>
+    <label class="settings-label" for="bgTextInput">Custom text</label>
+    <input type="text" class="settings-input" id="bgTextInput" maxlength="40" placeholder="e.g. M72B">
+  </div>
+
+  <div class="settings-block" id="bgImageBlock" hidden>
+    <label class="settings-label">Picture</label>
+    <div class="bg-image-row">
+      <button class="btn btn-sm" id="bgImageBtn" type="button">Choose image…</button>
+      <span class="bg-image-name" id="bgImageName">No image selected</span>
+    </div>
+    <label class="settings-check"><input type="checkbox" id="bgImageGray"> Desaturate</label>
+  </div>
+
+  <div class="settings-block" id="bgOpacityBlock" hidden>
+    <label class="settings-label">Opacity</label>
+    <div class="settings-range-row">
+      <input type="range" class="settings-range" id="bgOpacity" min="2" max="70" value="16">
+      <span class="settings-range-val" id="bgOpacityVal">16%</span>
+    </div>
+  </div>
+
+  <div class="settings-block" id="bgSizeBlock" hidden>
+    <label class="settings-label" id="bgSizeLabel">Size</label>
+    <div class="settings-range-row">
+      <input type="range" class="settings-range" id="bgSize" min="6" max="60" value="12">
+      <span class="settings-range-val" id="bgSizeVal">12px</span>
+    </div>
+  </div>
+
+  <div class="settings-block" id="bgColorBlock" hidden>
+    <label class="settings-label">Tint</label>
+    <div class="bg-image-row">
+      <input type="color" class="settings-color" id="bgColor" value="#7b2fff">
+      <span class="bg-image-name">Colors the ASCII / text layer</span>
+    </div>
+  </div>
+
+  <div class="settings-actions">
+    <button class="btn btn-sm" id="bgResetBtn" type="button">Reset</button>
+    <button class="btn btn-accent btn-sm" id="bgCloseBtn" type="button">Done</button>
+  </div>
+</div>
 
 <div class="tabs-viewport" id="tabsViewport">
 <div class="tabs-track" id="tabsTrack">
@@ -1246,6 +1411,207 @@ renderPresets();
 renderOverrides();
 renderTokenChips();
 updatePreview();
+
+/* ============================================================
+   Background customization — ASCII art / custom text / picture
+   ============================================================ */
+const BG_KEY = 'm72b_bg_settings_v1';
+const BG_DEFAULTS = { mode: 'none', ascii: '', text: '', imageDataUrl: '', imageName: '', opacity: 16, size: 12, color: '#7b2fff', grayscale: true };
+
+function loadBgSettings() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(BG_KEY) || '{}');
+    return { ...BG_DEFAULTS, ...(raw && typeof raw === 'object' ? raw : {}) };
+  } catch { return { ...BG_DEFAULTS }; }
+}
+
+let bgSettings = loadBgSettings();
+
+function saveBgSettings() {
+  try {
+    localStorage.setItem(BG_KEY, JSON.stringify(bgSettings));
+  } catch (err) {
+    // Most likely quota exceeded (a large image). Drop the image and retry once.
+    if (bgSettings.imageDataUrl) {
+      bgSettings.imageDataUrl = '';
+      try { localStorage.setItem(BG_KEY, JSON.stringify(bgSettings)); } catch {}
+    }
+    showToast('Could not save that background (too large)', 'error');
+  }
+}
+
+const bgLayer = document.getElementById('bgLayer');
+
+function applyBackground() {
+  bgLayer.innerHTML = '';
+  bgLayer.style.backgroundImage = 'none';
+  bgLayer.style.filter = 'none';
+  bgLayer.style.opacity = String(Math.max(0, Math.min(100, +bgSettings.opacity || 0)) / 100);
+  bgLayer.style.setProperty('--bg-tint', bgSettings.color || '#7b2fff');
+  bgLayer.style.setProperty('--bg-size', `${bgSettings.size || 12}px`);
+
+  if (bgSettings.mode === 'ascii' && bgSettings.ascii.trim()) {
+    const wrap = document.createElement('div');
+    wrap.className = 'bg-tile-wrap';
+    for (let i = 0; i < 16; i++) {
+      const pre = document.createElement('pre');
+      pre.className = 'bg-ascii';
+      pre.textContent = bgSettings.ascii; // textContent only — never HTML
+      wrap.appendChild(pre);
+    }
+    bgLayer.appendChild(wrap);
+  } else if (bgSettings.mode === 'text' && bgSettings.text.trim()) {
+    const wrap = document.createElement('div');
+    wrap.className = 'bg-text-wrap';
+    for (let i = 0; i < 48; i++) {
+      const span = document.createElement('span');
+      span.textContent = bgSettings.text; // textContent only — never HTML
+      wrap.appendChild(span);
+    }
+    bgLayer.appendChild(wrap);
+  } else if (bgSettings.mode === 'image' && bgSettings.imageDataUrl) {
+    bgLayer.style.backgroundImage = `url("${bgSettings.imageDataUrl}")`;
+    bgLayer.style.filter = bgSettings.grayscale ? 'grayscale(1) contrast(1.05)' : 'none';
+  }
+}
+
+// Downscale + re-encode a picked image client-side so it stays small in localStorage.
+function shrinkImageDataUrl(dataUrl, maxDim = 1600, quality = 0.82) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      let { width, height } = img;
+      if (width > maxDim || height > maxDim) {
+        const scale = maxDim / Math.max(width, height);
+        width = Math.round(width * scale);
+        height = Math.round(height * scale);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) { reject(new Error('canvas unavailable')); return; }
+      ctx.drawImage(img, 0, 0, width, height);
+      try { resolve(canvas.toDataURL('image/jpeg', quality)); }
+      catch (err) { reject(err); }
+    };
+    img.onerror = () => reject(new Error('Could not read that image'));
+    img.src = dataUrl;
+  });
+}
+
+function refreshSettingsUI() {
+  document.querySelectorAll('.settings-mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === bgSettings.mode));
+  document.getElementById('bgAsciiBlock').hidden  = bgSettings.mode !== 'ascii';
+  document.getElementById('bgTextBlock').hidden   = bgSettings.mode !== 'text';
+  document.getElementById('bgImageBlock').hidden  = bgSettings.mode !== 'image';
+  document.getElementById('bgOpacityBlock').hidden = bgSettings.mode === 'none';
+  document.getElementById('bgSizeBlock').hidden   = !(bgSettings.mode === 'ascii' || bgSettings.mode === 'text');
+  document.getElementById('bgSizeLabel').textContent = bgSettings.mode === 'text' ? 'Text size' : 'Font size';
+  document.getElementById('bgColorBlock').hidden  = !(bgSettings.mode === 'ascii' || bgSettings.mode === 'text');
+
+  document.getElementById('bgAsciiInput').value = bgSettings.ascii;
+  document.getElementById('bgTextInput').value  = bgSettings.text;
+  document.getElementById('bgImageName').textContent = bgSettings.imageName || 'No image selected';
+  document.getElementById('bgImageGray').checked = !!bgSettings.grayscale;
+  document.getElementById('bgOpacity').value = bgSettings.opacity;
+  document.getElementById('bgOpacityVal').textContent = `${bgSettings.opacity}%`;
+  document.getElementById('bgSize').value = bgSettings.size;
+  document.getElementById('bgSizeVal').textContent = `${bgSettings.size}px`;
+  document.getElementById('bgColor').value = bgSettings.color;
+}
+
+const settingsPanel = document.getElementById('settingsPanel');
+const settingsBtn   = document.getElementById('settingsBtn');
+
+function openSettingsPanel() {
+  refreshSettingsUI();
+  settingsPanel.classList.add('open');
+  settingsBtn.setAttribute('aria-expanded', 'true');
+}
+function closeSettingsPanel() {
+  settingsPanel.classList.remove('open');
+  settingsBtn.setAttribute('aria-expanded', 'false');
+}
+
+settingsBtn.addEventListener('click', () => {
+  if (settingsPanel.classList.contains('open')) closeSettingsPanel();
+  else openSettingsPanel();
+});
+document.getElementById('bgCloseBtn').addEventListener('click', closeSettingsPanel);
+document.addEventListener('click', (e) => {
+  if (!settingsPanel.classList.contains('open')) return;
+  if (settingsPanel.contains(e.target) || settingsBtn.contains(e.target)) return;
+  closeSettingsPanel();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && settingsPanel.classList.contains('open')) closeSettingsPanel();
+});
+
+document.getElementById('bgModeRow').addEventListener('click', (e) => {
+  const btn = e.target.closest('.settings-mode-btn');
+  if (!btn) return;
+  bgSettings.mode = btn.dataset.mode;
+  saveBgSettings(); refreshSettingsUI(); applyBackground();
+});
+
+document.getElementById('bgAsciiInput').addEventListener('input', (e) => {
+  bgSettings.ascii = e.target.value;
+  saveBgSettings(); applyBackground();
+});
+document.getElementById('bgTextInput').addEventListener('input', (e) => {
+  bgSettings.text = e.target.value;
+  saveBgSettings(); applyBackground();
+});
+document.getElementById('bgOpacity').addEventListener('input', (e) => {
+  bgSettings.opacity = +e.target.value;
+  document.getElementById('bgOpacityVal').textContent = `${bgSettings.opacity}%`;
+  saveBgSettings(); applyBackground();
+});
+document.getElementById('bgSize').addEventListener('input', (e) => {
+  bgSettings.size = +e.target.value;
+  document.getElementById('bgSizeVal').textContent = `${bgSettings.size}px`;
+  saveBgSettings(); applyBackground();
+});
+document.getElementById('bgColor').addEventListener('input', (e) => {
+  bgSettings.color = e.target.value;
+  saveBgSettings(); applyBackground();
+});
+document.getElementById('bgImageGray').addEventListener('change', (e) => {
+  bgSettings.grayscale = e.target.checked;
+  saveBgSettings(); applyBackground();
+});
+
+document.getElementById('bgImageBtn').addEventListener('click', async () => {
+  if (!isElectron) { showToast('Requires the desktop app', 'error'); return; }
+  const btn = document.getElementById('bgImageBtn');
+  const originalLabel = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Choosing…';
+  try {
+    const res = await window.electronAPI.pickBackgroundImage();
+    if (!res) { return; }
+    if (!res.ok) { if (res.error) showToast(res.error, 'error'); return; }
+    const shrunk = await shrinkImageDataUrl(res.dataUrl);
+    bgSettings.imageDataUrl = shrunk;
+    bgSettings.imageName = res.name || 'image';
+    saveBgSettings();
+    document.getElementById('bgImageName').textContent = bgSettings.imageName;
+    applyBackground();
+    showToast('Background image set', 'ok');
+  } catch (err) {
+    showToast('Could not load that image', 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = originalLabel;
+  }
+});
+
+document.getElementById('bgResetBtn').addEventListener('click', () => {
+  bgSettings = { ...BG_DEFAULTS };
+  try { localStorage.removeItem(BG_KEY); } catch {}
+  refreshSettingsUI(); applyBackground();
+  showToast('Background reset', 'ok');
+});
+
+applyBackground();
 </script>
 </body>
 </html>

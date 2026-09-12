@@ -12,5 +12,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   renameFile: (payload) => ipcRenderer.invoke('rename-file', payload),
   moveFile: (payload) => ipcRenderer.invoke('move-file', payload),
   musicBrainzSearch: (query) => ipcRenderer.invoke('musicbrainz-search', query),
+  pickBackgroundImage: () => ipcRenderer.invoke('pick-background-image'),
 
 });
